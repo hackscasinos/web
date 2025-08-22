@@ -1,0 +1,41 @@
+{
+  "name": "desa-bots",
+  "version": "1.0.0",
+  "description": "Sistema de señales de casino con interfaz moderna y WebSocket seguro",
+  "main": "app.py",
+  "scripts": {
+    "dev": "python app.py",
+    "websocket": "python ruleta.py",
+    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify",
+    "watch:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
+    "dev:full": "concurrently \"npm run watch:css\" \"python app.py\" \"python ruleta.py\"",
+    "install:python": "pip install -r requirements.txt",
+    "install:node": "npm install",
+    "setup": "npm run install:python && npm run install:node",
+    "test": "python -m pytest",
+    "format": "black .",
+    "lint": "flake8 ."
+  },
+  "keywords": [
+    "casino",
+    "signals",
+    "roulette",
+    "aviator",
+    "websocket",
+    "flask",
+    "python",
+    "tailwindcss"
+  ],
+  "author": "DESA BOTS Team",
+  "license": "PRIVATE",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

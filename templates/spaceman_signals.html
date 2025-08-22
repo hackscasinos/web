@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spaceman Signals - Hacks.Casino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.08); }
+        .glass-dark { backdrop-filter: blur(15px); background: rgba(0, 0, 0, 0.25); }
+        .signal-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .signal-card:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%);
+        }
+        .spaceman-gradient { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .multiplier-display {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(168, 237, 234, 0.5);
+        }
+        .spaceman-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .rocket-trail {
+            background: linear-gradient(45deg, transparent, rgba(168, 237, 234, 0.3), transparent);
+            animation: trail 2s linear infinite;
+        }
+        @keyframes trail {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-cyan-900 to-pink-900 min-h-screen">
+    <!-- Navbar -->
+    <nav class="glass-dark border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="/signals-casino" class="text-white/60 hover:text-white transition-colors">
+                        ← Volver
+                    </a>
+                    <h1 class="text-white text-xl font-bold">🚀 Spaceman Signals</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white/80">{{ user.email }}</span>
+                    <a href="/logout" class="text-white/60 hover:text-white transition-colors">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Game Header -->
+        <div class="text-center mb-8">
+            <div class="spaceman-gradient w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4 spaceman-float">
+                🚀
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">Spaceman Predictor</h1>
+            <p class="text-white/70">Señales avanzadas para Spaceman de Pragmatic Play</p>
+        </div>
+
+        <!-- Current Signal -->
+        <div class="mb-8">
+            <div class="glass rounded-2xl p-8 border border-cyan-500/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 rocket-trail"></div>
+                <div class="text-center relative z-10">
+                    <h2 class="text-2xl font-bold text-white mb-6">🎯 Predicción de Vuelo</h2>
+                    
+                    <div class="flex justify-center items-center space-x-8 mb-6">
+                        <div class="text-center">
+                            <div class="text-6xl mb-4 spaceman-float">🧑‍🚀</div>
+                            <p class="text-cyan-400 font-semibold">Astronauta Listo</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="multiplier-display text-cyan-400 pulse-animation mb-2">
+                                5.67x
+                            </div>
+                            <p class="text-white/80">Meta de Retiro</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-4">
+                        <p class="text-green-400 font-semibold">🔥 Señal de Alta Confianza</p>
+                        <p class="text-white/70 text-sm">Probabilidad de éxito: 95.4%</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-cyan-500/20 border border-cyan-500/50 rounded-lg p-3">
+                            <p class="text-cyan-400 font-semibold">ESTRATEGIA</p>
+                            <p class="text-white/70 text-sm">Retiro Moderado</p>
+                        </div>
+                        <div class="bg-pink-500/20 border border-pink-500/50 rounded-lg p-3">
+                            <p class="text-pink-400 font-semibold">CONFIANZA</p>
+                            <p class="text-white/70 text-sm">Muy Alta</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-white/60">
+                        Próximo vuelo en: 18 segundos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="signal-card rounded-xl p-6 text-center">
+                <div class="text-2xl mb-2">🚀</div>
+                <h3 class="text-white font-semibold mb-2">Vuelos Hoy</h3>
+                <p class="text-2xl font-bold text-cyan-400">38</p>
+            </div>
+            <div class="signal-card rounded-xl p-6 text-center">
+                <div class="text-2xl mb-2">🎯</div>
+                <h3 class="text-white font-semibold mb-2">Precisión</h3>
+                <p class="text-2xl font-bold text-green-400">95.4%</p>
+            </div>
+            <div class="signal-card rounded-xl p-6 text-center">
+                <div class="text-2xl mb-2">💫</div>
+                <h3 class="text-white font-semibold mb-2">Exitosos</h3>
+                <p class="text-2xl font-bold text-green-400">36</p>
+            </div>
+            <div class="signal-card rounded-xl p-6 text-center">
+                <div class="text-2xl mb-2">🌟</div>
+                <h3 class="text-white font-semibold mb-2">Max Mult.</h3>
+                <p class="text-2xl font-bold text-pink-400">12.8x</p>
+            </div>
+        </div>
+
+        <!-- Recent Flights -->
+        <div class="glass rounded-2xl overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-white/10">
+                <h3 class="text-xl font-semibold text-white">Últimos Vuelos</h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">🚀</div>
+                            <div>
+                                <h4 class="text-white font-medium">Vuelo #078</h4>
+                                <p class="text-white/60 text-sm">16:45 - Meta: 5.67x | Alcanzado: 7.23x</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            ✓ ÉXITO
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">🚀</div>
+                            <div>
+                                <h4 class="text-white font-medium">Vuelo #077</h4>
+                                <p class="text-white/60 text-sm">16:42 - Meta: 3.45x | Alcanzado: 4.12x</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            ✓ ÉXITO
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">💥</div>
+                            <div>
+                                <h4 class="text-white font-medium">Vuelo #076</h4>
+                                <p class="text-white/60 text-sm">16:39 - Meta: 8.90x | Crash: 2.15x</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
+                            ✗ CRASH
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">🚀</div>
+                            <div>
+                                <h4 class="text-white font-medium">Vuelo #075</h4>
+                                <p class="text-white/60 text-sm">16:36 - Meta: 2.34x | Alcanzado: 6.78x</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            ✓ ÉXITO
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">🚀</div>
+                            <div>
+                                <h4 class="text-white font-medium">Vuelo #074</h4>
+                                <p class="text-white/60 text-sm">16:33 - Meta: 4.56x | Alcanzado: 12.89x</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            ✓ ÉXITO
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Guide -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">🛸 Estrategias de Vuelo</h3>
+                <div class="space-y-4">
+                    <div class="border border-cyan-500/30 rounded-lg p-4">
+                        <h4 class="text-cyan-400 font-semibold mb-2">🟢 Conservadora</h4>
+                        <p class="text-white/80 text-sm">Retiro entre 1.5x - 3.0x</p>
+                        <p class="text-white/60 text-xs">Menor riesgo, ganancias consistentes</p>
+                    </div>
+                    <div class="border border-yellow-500/30 rounded-lg p-4">
+                        <h4 class="text-yellow-400 font-semibold mb-2">🟡 Moderada</h4>
+                        <p class="text-white/80 text-sm">Retiro entre 3.0x - 6.0x</p>
+                        <p class="text-white/60 text-xs">Balance entre riesgo y recompensa</p>
+                    </div>
+                    <div class="border border-red-500/30 rounded-lg p-4">
+                        <h4 class="text-red-400 font-semibold mb-2">🔴 Agresiva</h4>
+                        <p class="text-white/80 text-sm">Retiro superior a 6.0x</p>
+                        <p class="text-white/60 text-xs">Alto riesgo, máximas ganancias</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">⚙️ Configuración</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-white/80 text-sm">Estrategia de retiro</label>
+                        <select class="w-full mt-1 bg-white/10 text-white border border-white/20 rounded px-3 py-2">
+                            <option>Auto-retiro conservador</option>
+                            <option>Auto-retiro moderado</option>
+                            <option>Auto-retiro agresivo</option>
+                            <option>Manual (solo señales)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-white/80 text-sm">Multiplicador objetivo</label>
+                        <input type="range" min="1.5" max="10" step="0.1" value="5.67" class="w-full mt-1">
+                        <div class="flex justify-between text-xs text-white/60 mt-1">
+                            <span>1.5x</span>
+                            <span class="text-cyan-400 font-semibold">5.67x</span>
+                            <span>10.0x</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-white/80 text-sm">Alertas espaciales</label>
+                        <div class="mt-2 space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-3">
+                                <span class="text-white/80">🚀 Notificar despegue</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-3">
+                                <span class="text-white/80">💫 Alerta de retiro</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-3">
+                                <span class="text-white/80">💥 Aviso de crash inminente</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de actualización en tiempo real
+        function updateSpacemanSignal() {
+            // Aquí iría la lógica real de actualización de señales
+            console.log('Actualizando señales de Spaceman...');
+        }
+        
+        // Actualizar cada 15 segundos
+        setInterval(updateSpacemanSignal, 15000);
+        
+        // Simulación de animación del multiplicador
+        function animateMultiplier() {
+            const multipliers = [1.5, 2.3, 3.7, 5.67, 8.9, 12.5];
+            let current = 0;
+            setInterval(() => {
+                document.querySelector('.multiplier-display').textContent = multipliers[current] + 'x';
+                current = (current + 1) % multipliers.length;
+            }, 3000);
+        }
+        
+        // Iniciar animaciones después de cargar la página
+        setTimeout(animateMultiplier, 2000);
+    </script>
+</body>
+</html>

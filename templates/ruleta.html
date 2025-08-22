@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roulette - Columnas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-color: rgba(0, 0, 0, 0.3);
+      background-image:
+        conic-gradient(from 180deg at 25% 15%, #020614e1 0deg 90deg, #020614e1 90deg 180deg, #020614e1 180deg 270deg, #020614e1 270deg 360deg),
+        conic-gradient(from 270deg at 75% 50%, #020614e1 0deg 90deg, #020614e1 90deg 180deg, #020614e1 180deg 270deg, #020614e1 270deg 360deg);
+      background-repeat: no-repeat;
+      background-size: 400px 400px, 200px 200px;
+      background-position: 25% 15%, 75% 50%;
+      filter: blur(150px);
+    }
+    .disabled-link {
+      pointer-events: none;
+      opacity: 0.4;
+      cursor: default;
+    }
+    :root {
+      --scrollbar-thumb: rgba(255, 255, 255, 0.25);
+      --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+      --scrollbar-bg: transparent;
+    }
+    .overflow-auto {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+    }
+    .overflow-auto::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .overflow-auto::-webkit-scrollbar-track {
+      background: var(--scrollbar-bg);
+      border-radius: 3px;
+    }
+    .overflow-auto::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-thumb);
+      border-radius: 3px;
+      border: 1.5px solid var(--scrollbar-bg);
+      transition: background-color 0.3s ease;
+    }
+    .overflow-auto::-webkit-scrollbar-thumb:hover {
+      background-color: var(--scrollbar-thumb-hover);
+    }
+    
+    /* Estilos adicionales para el navbar y sidebar */
+    .filter-btn.active {
+      background-color: rgba(139, 92, 246, 0.3);
+      border-color: rgba(139, 92, 246, 0.6);
+      color: rgb(196, 181, 253);
+    }
+    
+    /* Animaciones suaves */
+    .transition-all {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Efectos hover mejorados */
+    .hover\:bg-white\/10:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .hover\:bg-white\/20:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    /* Animación para nueva señal */
+    @keyframes highlightNewSignal {
+      0% {
+        background-color: rgba(59, 130, 246, 0.3);
+        transform: scale(1.02);
+      }
+      50% {
+        background-color: rgba(59, 130, 246, 0.2);
+        transform: scale(1.01);
+      }
+      100% {
+        background-color: rgba(59, 130, 246, 0.1);
+        transform: scale(1);
+      }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="m-0 p-0 min-h-screen bg-black font-inter text-white select-none tracking-wide overflow-hidden">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo y título -->
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <span class="text-lg font-semibold text-white">Roulette Signals</span>
+        </div>
+
+        <!-- Estado de conexión y botón de menú -->
+        <div class="flex items-center space-x-4">
+          <div id="connectionStatus" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20">
+            <div id="statusDot" class="w-2 h-2 rounded-full bg-gray-400"></div>
+            <span id="statusText" class="text-xs text-white/80">Desconectado</span>
+          </div>
+          
+          <!-- Botón de menú -->
+          <button id="menuBtn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 border border-white/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="fixed top-16 left-0 h-full w-64 bg-black/90 backdrop-blur-xl border-r border-white/10 transform -translate-x-full transition-transform duration-300 ease-in-out z-40">
+    <div class="p-6">
+      <div class="space-y-6">
+        <!-- Título del sidebar -->
+        <div class="border-b border-white/10 pb-4">
+          <h2 class="text-lg font-semibold text-white">Menú Principal</h2>
+          <p class="text-sm text-white/60">Gestiona tus señales</p>
+        </div>
+
+        <!-- Opciones del menú -->
+        <div class="space-y-2">
+          <button id="historialBtn" class="w-full flex items-center space-x-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-200 border border-white/10">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span class="text-white font-medium">Historial de Señales</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay para cerrar sidebar -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden"></div>
+
+  <!-- Fondo decorativo -->
+  <div class="fixed inset-0 -z-10 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
+    <div class="absolute top-0 left-0 w-[300px] h-[300px] bg-purple-500 rounded-full opacity-30 blur-[120px]"></div>
+    <div class="absolute bottom-0 right-0 w-[250px] h-[250px] bg-cyan-500 rounded-full opacity-20 blur-[100px]"></div>
+  </div>
+
+<main class="flex flex-col justify-center items-center min-h-screen px-4 w-full max-w-full pt-20">
+  <section class="relative w-full lg:w-full max-w-none bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between shadow-lg transition-transform duration-300 min-h-[500px] lg:min-h-[600px]">
+
+<div class="mb-6 relative w-full max-w-sm mx-auto">
+  <button id="rouletteDropdownBtn"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          type="button"
+          class="flex items-center justify-between w-full px-5 py-2.5 text-sm font-medium
+                 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-xl
+                 shadow-md hover:bg-white/20 hover:border-blue-400 transition-all duration-300
+                 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          aria-label="Elegir Ruleta">
+    <span id="rouletteSelectedLabel">Elegir Ruleta</span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white/80 ml-2 transition-transform duration-200 group-aria-expanded:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6" />
+    </svg>
+  </button>
+
+  <ul id="rouletteDropdown"
+      role="listbox"
+      aria-labelledby="rouletteDropdownBtn"
+      tabindex="-1"
+      class="absolute mt-2 w-full z-40 bg-gray-600/90 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl overflow-hidden text-sm text-white hidden transition-all duration-300"
+  >
+
+  <!-- Ruby Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>    <span>Ruby Roulette</span>
+  </li>
+
+  <!-- Mega Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>    <span>Mega Roulette</span>
+  </li>
+
+  <!-- Azure Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>
+    <span>Azure Roulette</span>
+  </li>
+
+  <!-- Macao Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>
+    <span>Macao Roulette</span>
+  </li>
+
+  <!-- Spanish Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>
+    <span>Spanish Roulette</span>
+  </li>
+
+  <!-- Speed Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>
+    <span>Speed Roulette</span>
+  </li>
+
+  <!-- Auto Roulette -->
+  <li role="option" tabindex="0"
+      class="flex items-center gap-2 px-4 py-2 hover:bg-white/20 transition cursor-pointer"
+      data-port="8865">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 1200 1200" fill="currentColor">
+      <g><path d="M600 120c-265.2 0-480 214.8-480 480s214.8 480 480 480 480-214.8 480-480-214.8-480-480-480zM277.2 600H168c0-46.801 7.2-91.199 21.602-133.2l104.4 33.602c-10.801 31.199-16.801 64.797-16.801 99.598zm16.801 99.602c10.801 32.398 26.398 62.398 45.602 90l-88.801 64.801c-26.398-36-48-76.801-61.199-120zm116.4 160.8c27.602 19.199 57.602 36 90 45.602l-33.602 104.4c-43.199-14.398-84-34.801-120-61.199zm189.6 62.402c34.801 0 68.398-6 99.602-15.602l33.602 104.4c-42.004 13.203-86.402 20.402-133.2 20.402zm0-48c-151.2 0-274.8-123.6-274.8-274.8s123.6-274.8 274.8-274.8 274.8 123.6 274.8 274.8-123.6 274.8-274.8 274.8zm189.6-535.2c-27.602-19.199-57.602-36-90-45.602l33.602-104.4c43.199 14.398 84 34.801 120 61.199zm70.797 70.797 88.801-64.801c26.398 36 48 76.801 61.199 120l-104.4 33.602c-9.602-31.199-26.398-61.199-45.602-88.801zm-260.4-242.4v109.2c-34.801 0-68.398 6-99.602 15.602l-33.602-104.4c42.004-13.203 86.402-20.402 133.2-20.402zm-253.2 82.801 64.801 88.801c-27.602 20.398-51.602 44.398-72 70.797l-88.801-64.801c26.398-35.996 58.801-68.398 96-94.797zm506.4 698.4-64.801-88.801c27.602-20.398 51.602-44.398 72-70.797l88.801 64.801c-26.398 35.996-58.801 68.398-96 94.797zm157.2-216-104.4-33.602c10.801-31.199 15.602-64.801 15.602-99.602l110.4.004c0 46.8-7.2 91.199-21.602 133.2z"></path><path d="M600 30C285.6 30 30 285.6 30 600s255.6 570 570 570 570-255.6 570-570S914.4 30 600 30zm0 1092c-288 0-522-234-522-522S312 78 600 78s522 234 522 522-234 522-522 522z"></path><path d="M819.6 600c0-21.602-18-39.602-39.602-39.602-7.2 0-14.398 2.398-20.398 6-19.199 12-42 15.602-63.602 15.602h-21.602c-7.2-28.801-28.801-50.398-56.398-56.398V504c0-22.801 3.602-45.602 15.602-63.602 3.602-6 6-13.199 6-20.398 0-21.602-18-39.602-39.602-39.602s-39.602 18-39.602 39.602c0 7.2 2.398 14.398 6 20.398 12 19.199 15.602 42 15.602 63.602v21.602c-28.801 7.2-50.398 28.801-56.398 56.398h-21.602c-22.801 0-45.602-3.602-63.602-15.602-6-3.602-13.199-6-20.398-6-21.602 0-39.602 18-39.602 39.602s18 39.602 39.602 39.602c7.2 0 14.398-2.398 20.398-6 19.199-12 42-15.602 63.602-15.602H525.6c7.2 28.801 28.801 50.398 56.398 56.398V696c0 22.801-3.602 45.602-15.602 63.602-3.602 6-6 13.199-6 20.398 0 21.602 18 39.602 39.602 39.602s39.602-18 39.602-39.602c0-7.2-2.398-14.398-6-20.398-12-19.199-15.602-42-15.602-63.602v-21.602c28.801-7.2 50.398-28.801 56.398-56.398h21.602c22.801 0 45.602 3.602 63.602 15.602 6 3.602 13.199 6 20.398 6 22.801 0 39.602-18 39.602-39.602z"></path></g>
+    </svg>
+    <span>Auto Roulette</span>
+  </li>
+</ul>
+
+</div>
+
+    <!-- Estado juego actual -->
+    <div id="currentGameStatus" class="w-full min-h-[60px] mb-4 flex items-center justify-center text-sm text-white/90 font-medium text-center select-text"></div>
+
+    <!-- Información sobre el historial -->
+    <div class="w-full mb-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+      <div class="flex items-center justify-center gap-3">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span class="text-sm text-blue-300 font-medium">
+          El historial completo de señales se puede ver en el menú lateral → "Historial de Señales"
+        </span>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+  <!-- Modal del Historial de Señales -->
+  <div id="historialModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+    
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div class="bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <!-- Header del modal -->
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white">Historial de Señales</h2>
+              <p class="text-sm text-white/60">Registro completo de todas las señales</p>
+            </div>
+          </div>
+          <button id="closeHistorialModal" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 border border-white/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+          <!-- Información de actualización en tiempo real -->
+          <div class="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span class="text-sm font-semibold text-green-300">Actualización en Tiempo Real</span>
+            </div>
+            <p class="text-sm text-green-200/80">
+              El historial se actualiza automáticamente cuando llegan nuevas señales. 
+              No es necesario cerrar y abrir el modal.
+            </p>
+          </div>
+          
+          <!-- Filtros -->
+          <div class="mb-6 flex flex-wrap gap-3">
+            <button class="filter-btn active px-4 py-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors duration-200" data-filter="all">
+              Todas
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg bg-green-500/20 text-green-300 border border-green-500/40 hover:bg-green-500/30 transition-colors duration-200" data-filter="ganada">
+              Ganadas
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 transition-colors duration-200" data-filter="derrota">
+              Perdidas
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-500/30 transition-colors duration-200" data-filter="cero">
+              Cero
+            </button>
+          </div>
+
+          <!-- Tabla del historial -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-white/5 border-b border-white/10">
+                <tr>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Fecha</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Hora</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Estado</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Número</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Columna</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">Gale</th>
+                  <th class="px-4 py-3 text-left text-white/80 font-semibold">ID</th>
+                </tr>
+              </thead>
+              <tbody id="historialTableBody" class="divide-y divide-white/10">
+                <!-- Las filas se generarán dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mensaje cuando no hay datos -->
+          <div id="noHistorialMessage" class="text-center py-12 text-white/60 hidden">
+            <svg class="w-16 h-16 mx-auto mb-4 text-white/20" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p class="text-lg font-medium">No hay señales en el historial</p>
+            <p class="text-sm">Las señales aparecerán aquí cuando se procesen</p>
+          </div>
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="flex items-center justify-between p-6 border-t border-white/10 bg-white/5">
+          <div class="text-sm text-white/60">
+            <span id="totalSeñales">0</span> señales en total
+          </div>
+          <div class="flex space-x-2">
+            <button id="exportHistorial" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 border border-white/20 text-white text-sm">
+              Exportar CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script>
+  // Variables globales para el historial
+  let historialSeñales = [];
+  let filtroActual = 'all';
+
+  // Funciones para el navbar y sidebar
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar.classList.contains('-translate-x-full')) {
+      sidebar.classList.remove('-translate-x-full');
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    } else {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+  }
+
+  // Funciones para el modal del historial
+  function openHistorialModal() {
+    const modal = document.getElementById('historialModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    cargarHistorialSeñales();
+  }
+
+  function closeHistorialModal() {
+    const modal = document.getElementById('historialModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+  }
+
+  function cargarHistorialSeñales() {
+    const tbody = document.getElementById('historialTableBody');
+    const noMessage = document.getElementById('noHistorialMessage');
+    const totalSpan = document.getElementById('totalSeñales');
+    
+    if (historialSeñales.length === 0) {
+      tbody.innerHTML = '';
+      noMessage.classList.remove('hidden');
+      totalSpan.textContent = '0';
+      return;
+    }
+
+    noMessage.classList.add('hidden');
+    totalSpan.textContent = historialSeñales.length;
+    
+    // Filtrar señales según el filtro actual
+    let señalesFiltradas = historialSeñales;
+    if (filtroActual !== 'all') {
+      señalesFiltradas = historialSeñales.filter(señal => 
+        señal.status.toLowerCase().includes(filtroActual)
+      );
+    }
+
+    tbody.innerHTML = señalesFiltradas.map(señal => `
+      <tr class="hover:bg-white/5 transition-colors duration-200">
+        <td class="px-4 py-3 text-white/80">${señal.fecha}</td>
+        <td class="px-4 py-3 text-white/80">${señal.hora}</td>
+        <td class="px-4 py-3">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            señal.status.toLowerCase() === 'ganada' ? 'bg-green-500/20 text-green-300 border border-green-500/40' :
+            señal.status.toLowerCase() === 'derrota' ? 'bg-red-500/20 text-red-300 border border-red-500/40' :
+            'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+          }">
+            ${señal.status}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-white/80">${señal.number || '-'}</td>
+        <td class="px-4 py-3 text-white/80">${señal.column || '-'}</td>
+        <td class="px-4 py-3 text-white/80">${señal.gale || '-'}</td>
+        <td class="px-4 py-3 text-white/80 font-mono text-xs">${señal.id || '-'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function aplicarFiltro(filtro) {
+    filtroActual = filtro;
+    
+    // Actualizar botones de filtro
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.filter === filtro) {
+        btn.classList.add('active');
+      }
+    });
+    
+    cargarHistorialSeñales();
+  }
+
+  function exportarCSV() {
+    if (historialSeñales.length === 0) {
+      alert('No hay señales para exportar');
+      return;
+    }
+
+    const headers = ['Fecha', 'Hora', 'Estado', 'Número', 'Columna', 'Gale', 'ID'];
+    const csvContent = [
+      headers.join(','),
+      ...historialSeñales.map(señal => [
+        señal.fecha,
+        señal.hora,
+        señal.status,
+        señal.number || '',
+        señal.column || '',
+        señal.gale || '',
+        señal.id || ''
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `historial_señales_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+
+
+  // Función para actualizar el estado de conexión en el navbar
+  function updateConnectionStatus(status, text) {
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    
+    if (statusDot && statusText) {
+      // Remover clases anteriores
+      statusDot.className = 'w-2 h-2 rounded-full';
+      statusText.textContent = text;
+      
+      // Aplicar clases según el estado
+      switch (status) {
+        case 'connected':
+          statusDot.classList.add('bg-green-400');
+          statusText.classList.add('text-green-300');
+          break;
+        case 'disconnected':
+          statusDot.classList.add('bg-gray-400');
+          statusText.classList.add('text-gray-300');
+          break;
+        case 'error':
+          statusDot.classList.add('bg-red-400');
+          statusText.classList.add('text-red-300');
+          break;
+        default:
+          statusDot.classList.add('bg-gray-400');
+          statusText.classList.add('text-gray-300');
+      }
+    }
+  }
+
+  // Función para agregar señal al historial
+  function agregarSeñalAlHistorial(status, number, column, gale, idUnico = null) {
+    const ahora = new Date();
+    const señal = {
+      fecha: ahora.toLocaleDateString('es-ES'),
+      hora: ahora.toLocaleTimeString('es-ES'),
+      status: status,
+      number: number,
+      column: column,
+      gale: gale,
+      id: idUnico,
+      timestamp: ahora.getTime()
+    };
+    
+    // Si tenemos un ID único, verificar si ya existe en el historial
+    if (idUnico) {
+      const duplicado = historialSeñales.find(existente => existente.id === idUnico);
+      if (duplicado) {
+        console.log(`Señal con ID ${idUnico} ya existe en el historial, omitiendo...`);
+        return;
+      }
+    }
+    
+    historialSeñales.unshift(señal);
+    
+    // Mantener solo las últimas 100 señales
+    if (historialSeñales.length > 100) {
+      historialSeñales = historialSeñales.slice(0, 100);
+    }
+    
+    // Guardar en localStorage
+    localStorage.setItem('historialSeñales', JSON.stringify(historialSeñales));
+    console.log(`Señal agregada al historial con ID: ${idUnico || 'Sin ID'}`);
+    
+    // Actualizar automáticamente la tabla del modal si está abierto
+    actualizarHistorialModalEnTiempoReal();
+    
+    // Actualizar indicador de nuevas señales en el botón del sidebar
+    actualizarIndicadorNuevasSeñales();
+  }
+
+  // Función para actualizar el historial del modal en tiempo real
+  function actualizarHistorialModalEnTiempoReal() {
+    const modal = document.getElementById('historialModal');
+    const tbody = document.getElementById('historialTableBody');
+    const noMessage = document.getElementById('noHistorialMessage');
+    const totalSpan = document.getElementById('totalSeñales');
+    
+    // Solo actualizar si el modal está abierto
+    if (modal && !modal.classList.contains('hidden') && tbody) {
+      // Ocultar mensaje de "no hay datos" si hay señales
+      if (historialSeñales.length > 0) {
+        noMessage.classList.add('hidden');
+      }
+      
+      // Actualizar contador total
+      totalSpan.textContent = historialSeñales.length;
+      
+      // Mostrar notificación de nueva señal
+      mostrarNotificacionNuevaSeñal();
+      
+      // Filtrar señales según el filtro actual
+      let señalesFiltradas = historialSeñales;
+      if (filtroActual !== 'all') {
+        señalesFiltradas = historialSeñales.filter(señal => 
+          señal.status.toLowerCase().includes(filtroActual)
+        );
+      }
+      
+      // Actualizar la tabla
+      tbody.innerHTML = señalesFiltradas.map((señal, index) => `
+        <tr class="hover:bg-white/5 transition-all duration-300 ${index === 0 ? 'animate-pulse bg-blue-500/10' : ''}" 
+            style="${index === 0 ? 'animation: highlightNewSignal 2s ease-out;' : ''}">
+          <td class="px-4 py-3 text-white/80">${señal.fecha}</td>
+          <td class="px-4 py-3 text-white/80">${señal.hora}</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              señal.status.toLowerCase() === 'ganada' ? 'bg-green-500/20 text-green-300 border border-green-500/40' :
+              señal.status.toLowerCase() === 'derrota' ? 'bg-red-500/20 text-red-300 border border-red-500/40' :
+              'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+            }">
+              ${señal.status}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-white/80">${señal.number || '-'}</td>
+          <td class="px-4 py-3 text-white/80">${señal.column || '-'}</td>
+          <td class="px-4 py-3 text-white/80">${señal.gale || '-'}</td>
+          <td class="px-4 py-3 text-white/80 font-mono text-xs">${señal.id || '-'}</td>
+        </tr>
+      `).join('');
+      
+      // Remover la animación después de 2 segundos
+      if (señalesFiltradas.length > 0) {
+        setTimeout(() => {
+          const primeraFila = tbody.querySelector('tr');
+          if (primeraFila) {
+            primeraFila.classList.remove('animate-pulse', 'bg-blue-500/10');
+            primeraFila.style.animation = '';
+          }
+        }, 2000);
+      }
+      
+      console.log('Historial del modal actualizado en tiempo real');
+    }
+  }
+
+  // Función para mostrar notificación de nueva señal
+  function mostrarNotificacionNuevaSeñal() {
+    const modal = document.getElementById('historialModal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    
+    // Crear notificación si no existe
+    let notificacion = modal.querySelector('.nueva-señal-notificacion');
+    if (!notificacion) {
+      notificacion = document.createElement('div');
+      notificacion.className = 'nueva-señal-notificacion fixed top-20 right-4 z-60 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-x-full transition-transform duration-500';
+      notificacion.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Nueva señal agregada al historial</span>
+        </div>
+      `;
+      document.body.appendChild(notificacion);
+    }
+    
+    // Mostrar notificación
+    notificacion.classList.remove('translate-x-full');
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+      notificacion.classList.add('translate-x-full');
+    }, 3000);
+  }
+
+  // Función para actualizar indicador de nuevas señales en el sidebar
+  function actualizarIndicadorNuevasSeñales() {
+    const historialBtn = document.getElementById('historialBtn');
+    if (!historialBtn) return;
+    
+    // Crear o actualizar indicador de nuevas señales
+    let indicador = historialBtn.querySelector('.nuevas-señales-indicador');
+    if (!indicador) {
+      indicador = document.createElement('div');
+      indicador.className = 'nuevas-señales-indicador absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse';
+      historialBtn.style.position = 'relative';
+      historialBtn.appendChild(indicador);
+    }
+    
+    // Mostrar indicador
+    indicador.style.display = 'block';
+    
+    // Ocultar después de 5 segundos
+    setTimeout(() => {
+      indicador.style.display = 'none';
+    }, 5000);
+  }
+
+  // Función para limpiar duplicados del historial
+  function limpiarDuplicadosHistorial() {
+    const historialLimpio = [];
+    const duplicados = new Set();
+    
+    historialSeñales.forEach(señal => {
+      // Crear una clave única para cada señal
+      const clave = `${señal.status}-${señal.number}-${señal.column}-${señal.gale}-${señal.fecha}-${señal.hora}`;
+      
+      if (!duplicados.has(clave)) {
+        duplicados.add(clave);
+        historialLimpio.push(señal);
+      }
+    });
+    
+    historialSeñales = historialLimpio;
+    localStorage.setItem('historialSeñales', JSON.stringify(historialSeñales));
+    console.log(`Historial limpiado: ${historialSeñales.length} señales únicas`);
+  }
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar estado de conexión
+    updateConnectionStatus('disconnected', 'Desconectado');
+    
+    // Cargar historial desde localStorage
+    const historialGuardado = localStorage.getItem('historialSeñales');
+    if (historialGuardado) {
+      historialSeñales = JSON.parse(historialGuardado);
+    }
+
+    // Event listeners para el sidebar
+    document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
+    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+    // Event listeners para el modal del historial
+    document.getElementById('historialBtn').addEventListener('click', () => {
+      closeSidebar();
+      openHistorialModal();
+    });
+    
+    document.getElementById('closeHistorialModal').addEventListener('click', closeHistorialModal);
+    
+    // Event listeners para filtros
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => aplicarFiltro(btn.dataset.filter));
+    });
+
+    // Event listeners para botones del modal
+    document.getElementById('exportHistorial').addEventListener('click', exportarCSV);
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeHistorialModal();
+        closeSidebar();
+      }
+    });
+  });
+
+  function toggleDropdown(dropdown, btn) {
+    const isOpen = !dropdown.classList.contains('hidden');
+    document.querySelectorAll('ul[role="listbox"]').forEach(ul => ul.classList.add('hidden'));
+    document.querySelectorAll('button[aria-haspopup="listbox"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    if (!isOpen) {
+      dropdown.classList.remove('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.relative')) {
+      document.querySelectorAll('ul[role="listbox"]').forEach(ul => ul.classList.add('hidden'));
+      document.querySelectorAll('button[aria-haspopup="listbox"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+  });
+
+  const rouletteBtn = document.getElementById('rouletteDropdownBtn');
+  const rouletteDropdown = document.getElementById('rouletteDropdown');
+  let socket = null;
+
+  function disconnectSocket() {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.close();
+    }
+    socket = null;
+  }
+
+  // Spinner SVG
+  const spinnerSVG = `
+    <svg class="animate-spin h-5 w-5 text-blue-500 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>`;
+
+  function connectSocket(port, rouletteName) {
+    disconnectSocket();
+
+    const wsUrl = `wss://statszones.com:${port}`;
+    socket = new WebSocket(wsUrl);
+
+    const statusDiv = document.getElementById('currentGameStatus');
+
+    const icons = {
+      WIN: `<svg class="inline-block w-5 h-5 stroke-green-600 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>`,
+      LOSS: `<svg class="inline-block w-5 h-5 stroke-red-600 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>`,
+      GANADA: `<svg class="inline-block w-5 h-5 stroke-green-600 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>`,
+      DERROTA: `<svg class="inline-block w-5 h-5 stroke-red-600 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>`,
+      ZERO: `<svg class="inline-block w-5 h-5 stroke-yellow-500 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /></svg>`,
+      TIE: `<svg class="inline-block w-5 h-5 stroke-yellow-500 mr-2" fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /></svg>`
+    };
+
+    function cleanEmojis(text) {
+      return text.replace(/✅|🚫|🟠/g, "").trim();
+    }
+
+    function parseSignal(entry) {
+      const cleanText = cleanEmojis(entry);
+      const parts = cleanText.split(' ');
+      const status = parts[0];
+      
+      console.log('parseSignal - Texto original:', entry);
+      console.log('parseSignal - Texto limpio:', cleanText);
+      console.log('parseSignal - Partes:', parts);
+      
+      // Extraer número
+      const number = parts.find(p => p.startsWith('#'))?.replace('#', '') || '-';
+      
+      // Extraer columna o docena
+      let column = '-';
+      if (parts.includes('COLUMNA')) {
+        const colIndex = parts.indexOf('COLUMNA');
+        if (colIndex + 1 < parts.length) {
+          column = `COLUMNA ${parts[colIndex + 1]}`;
+        }
+        console.log('parseSignal - Encontrada COLUMNA:', column);
+      } else if (parts.includes('DOCENA')) {
+        const docIndex = parts.indexOf('DOCENA');
+        if (docIndex + 1 < parts.length) {
+          column = `DOCENA ${parts[docIndex + 1]}`;
+        }
+        console.log('parseSignal - Encontrada DOCENA:', column);
+      } else if (parts.includes('EMPATE')) {
+        column = 'EMPATE';
+        console.log('parseSignal - Encontrado EMPATE');
+      } else {
+        console.log('parseSignal - No se encontró COLUMNA, DOCENA ni EMPATE');
+      }
+      
+      // Extraer gale del mismo mensaje
+      let gale = 0;
+      const galeMatch = cleanText.match(/GALE\s*#(\d+)/i);
+      if (galeMatch) {
+        gale = parseInt(galeMatch[1], 10);
+        console.log('parseSignal - Encontrado GALE:', gale);
+      }
+      
+      // Extraer ID único de la señal
+      let idUnico = null;
+      const idMatch = cleanText.match(/\[ID:([^\]]+)\]/);
+      if (idMatch) {
+        idUnico = idMatch[1];
+        console.log('parseSignal - Encontrado ID único:', idUnico);
+      }
+      
+      const result = { status, number, column, gale, id: idUnico };
+      console.log('parseSignal - Resultado final:', result);
+      return result;
+    }
+
+    // Función para limpiar el estado del juego
+    function limpiarEstadoJuego() {
+      statusDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 0118 0z" />
+        </svg>Esperando próxima entrada...</div>`;
+    }
+
+    // Función para mostrar estado de espera con emoji
+    function mostrarEstadoEspera() {
+      statusDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 0118 0z" />
+        </svg>⏳ Esperando próxima entrada...</div>`;
+    }
+
+    // Mostrar spinner y mensaje "Conectando a Roulette Ruby..."
+    statusDiv.innerHTML = `${spinnerSVG} Conectando a <strong>${rouletteName}</strong>...`;
+
+    socket.addEventListener('open', () => {
+      statusDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 0118 0z" />
+        </svg>Esperando señal</div>`;
+      
+      // Actualizar estado de conexión en el navbar
+      updateConnectionStatus('connected', 'Conectado');
+    });
+
+        socket.addEventListener('message', (event) => {
+      try {
+        // Intentar parsear como JSON primero
+        const data = JSON.parse(event.data);
+        
+
+
+
+
+        if (data.type === "signal") {
+          if (data.bet === true) {
+            statusDiv.innerHTML = `
+              <div class="relative px-4 py-3 rounded-xl border border-green-500/40 bg-green-500/10 text-green-300 shadow-lg shadow-green-500/20 w-full max-w-xl mx-auto">
+                <div class="flex items-center gap-3 mb-1">
+                  <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-sm font-semibold uppercase tracking-wide">Entrada activa</span>
+                </div>
+                <div class="text-sm text-green-200 font-medium mb-1">✅ ${data.message}</div>
+                <div class="text-xs text-green-300/80">Gale: <span class="font-bold">#${data.gales}</span></div>
+              </div>`;
+          } else {
+            statusDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>Esperando próxima entrada...</div>`;
+          }
+        }
+
+        if (data.type === "signal_end") {
+          statusDiv.innerHTML = `<div class="flex items-center gap-2 text-gray-400 text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 0118 0z" />
+            </svg>Esperando próxima entrada...</div>`;
+        }
+      } catch (error) {
+        // Si no es JSON, procesar como mensaje de texto plano
+        const message = event.data;
+        
+        // Procesar mensaje "Esperar" o "Esperando próxima entrada"
+        if (message === "Esperar" || message.includes("Esperando próxima entrada")) {
+          mostrarEstadoEspera();
+          return;
+        }
+        
+        // Procesar mensajes como "GANADA #12 COLUMNA 03" o "DERROTA #2" o "CERO #0 EMPATE"
+        if (message.includes('GANADA') || message.includes('DERROTA') || message.includes('ZERO') || message.includes('CERO')) {
+          console.log('Procesando mensaje:', message);
+          const { status, number, column, gale, id } = parseSignal(message);
+          console.log('Parseado:', { status, number, column, gale, id });
+          
+          // Agregar señal al historial con ID único
+          agregarSeñalAlHistorial(status, number, column, gale, id);
+          
+          // Mostrar brevemente el resultado y luego cambiar a espera
+          statusDiv.innerHTML = `<div class="relative px-4 py-3 rounded-xl border border-yellow-500/40 bg-yellow-500/10 text-yellow-300 shadow-lg shadow-yellow-500/20 w-full max-w-xl mx-auto">
+            <div class="flex items-center gap-3 mb-1">
+              <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-sm font-semibold uppercase tracking-wide">Resultado</span>
+            </div>
+            <div class="text-sm text-yellow-200 font-medium">${message}</div>
+          </div>`;
+          
+          // Cambiar a estado de espera después de 3 segundos
+          setTimeout(() => {
+            limpiarEstadoJuego();
+          }, 3000);
+        }
+        
+        // Procesar mensajes de señal como "Entrar en: Docenas 1 y 2 Máx: 1 Gales"
+        if (message.includes('Entrar en:') || message.includes('GALE #')) {
+          // Mostrar la señal en el estado del juego
+          statusDiv.innerHTML = `<div class="relative px-4 py-3 rounded-xl border border-blue-500/40 bg-blue-500/10 text-blue-300 shadow-lg shadow-blue-500/20 w-full max-w-xl mx-auto">
+            <div class="flex items-center gap-3 mb-1">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-sm font-semibold uppercase tracking-wide">Señal Activa</span>
+            </div>
+            <div class="text-sm text-blue-200 font-medium">${message}</div>
+          </div>`;
+        }
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      statusDiv.textContent = 'Desconectado';
+      updateConnectionStatus('disconnected', 'Desconectado');
+    });
+
+    socket.addEventListener('error', () => {
+      statusDiv.textContent = 'Error en conexión WebSocket';
+      updateConnectionStatus('error', 'Error');
+    });
+  }
+
+  rouletteBtn.addEventListener('click', () => toggleDropdown(rouletteDropdown, rouletteBtn));
+  rouletteDropdown.querySelectorAll('li').forEach(li => {
+    li.addEventListener('click', () => {
+      rouletteBtn.textContent = li.textContent;
+      toggleDropdown(rouletteDropdown, rouletteBtn);
+
+      const port = li.getAttribute('data-port');
+      const rouletteName = li.textContent.trim();
+      connectSocket(port, rouletteName);
+    });
+  });
+
+
+</script>
+
+
+
+</body>
+</html>

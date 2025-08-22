@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hacks.Casino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fuentes ultra minimalistas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '0.3' },
+                            '50%': { opacity: '0.8' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #000000;
+            overflow-x: hidden;
+        }
+        
+        /* Glassmorphism ultra elegante */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.015);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+        
+        .glassmorphism-strong {
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(45px);
+            -webkit-backdrop-filter: blur(45px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        
+        /* Fondo ultra minimalista */
+        .minimal-bg {
+            background: #000000;
+            position: relative;
+        }
+        
+        .minimal-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.005) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.005) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        /* Efectos de hover ultra suaves */
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Botones ultra minimalistas */
+        .btn-minimal {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s ease;
+            font-weight: 200;
+        }
+        
+        .btn-minimal:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        /* Estilos base para todas las pestañas */
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Tablas limpias y espaciosas */
+        .table-container {
+            background: rgba(255, 255, 255, 0.005);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .table-minimal {
+            background: transparent;
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+        
+        .table-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .table-row:last-child {
+            border-bottom: none;
+        }
+        
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Headers limpios */
+        .table-header {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table-header th {
+            font-weight: 400;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 24px 32px;
+            text-align: left;
+        }
+        
+        /* Celdas con más espacio */
+        .table-cell {
+            padding: 28px 32px;
+            vertical-align: middle;
+        }
+        
+        .table-cell-compact {
+            padding: 20px 24px;
+        }
+        
+        /* Elementos decorativos */
+        .decorative-dot {
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        /* Sistema de notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: #000;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+            transform: translateX(400px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .notification.error {
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Scrollbar ultra minimalista */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Badge ultra elegante */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+
+        
+        /* Botones de editar minimalistas */
+        .edit-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .edit-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+        }
+        
+        /* Modales profesionales */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: translateY(0) scale(1);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 8px;
+        }
+        
+        .modal-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .modal-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .modal-option.selected {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .modal-btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .modal-btn-save {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.95);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-btn-save:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 1);
+        }
+        
+        /* Responsividad ultra mejorada */
+        @media (max-width: 1024px) {
+            .table-container {
+                margin: 0 16px;
+                border-radius: 20px;
+            }
+            
+            .selector-container {
+                max-width: 180px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .table-container {
+                margin: 0 12px;
+                border-radius: 18px;
+            }
+            
+            .table-header th {
+                padding: 16px 20px;
+                font-size: 10px;
+            }
+            
+            .table-cell {
+                padding: 16px 20px;
+            }
+            
+            .selector-container {
+                max-width: 160px;
+            }
+            
+            .role-selector,
+            .purchase-status-selector {
+                font-size: 12px;
+                padding: 10px 36px 10px 36px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .table-container {
+                margin: 0 8px;
+                border-radius: 16px;
+            }
+            
+            .table-row {
+                border-radius: 12px;
+                margin-bottom: 4px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .table-row:hover {
+                transform: translateX(1px);
+            }
+            
+                    .tab-btn {
+            min-height: 44px; /* Mejor touch target para móviles */
+            font-size: 12px;
+            padding: 12px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Estilos para el estado activo */
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.03);
+        }
+        
+        .tab-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+        }
+        
+        /* Efecto hover mejorado */
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.7);
+            transform: translateY(-1px);
+        }
+        
+        /* Transiciones suaves */
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+            
+            .table-header th {
+                padding: 14px 16px;
+                font-size: 9px;
+            }
+            
+            .table-cell {
+                padding: 14px 16px;
+            }
+            
+            .selector-container {
+                max-width: 140px;
+            }
+            
+            .role-selector,
+            .purchase-status-selector {
+                font-size: 11px;
+                padding: 8px 32px 8px 32px;
+                border-radius: 12px;
+            }
+            
+            .selector-icon {
+                left: 8px;
+            }
+            
+            .dropdown-icon {
+                right: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .table-container {
+                margin: 0 4px;
+                border-radius: 14px;
+            }
+            
+            .table-header th {
+                padding: 12px 12px;
+            }
+            
+            .table-cell {
+                padding: 12px 12px;
+            }
+            
+            .selector-container {
+                max-width: 120px;
+            }
+            
+            .role-selector,
+            .purchase-status-selector {
+                font-size: 10px;
+                padding: 6px 28px 6px 28px;
+                border-radius: 10px;
+            }
+        }
+        
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .badge-approved {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .badge-admin {
+            background: rgba(139, 69, 19, 0.15);
+            color: #d97706;
+            border: 1px solid rgba(139, 69, 19, 0.2);
+        }
+        
+        .badge-signals {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .badge-community {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        /* Estilos para las pestañas del bookmaker */
+        .bookmaker-tab-btn {
+            min-height: 44px;
+            font-size: 12px;
+            padding: 12px 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .bookmaker-tab-btn.active {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.03);
+        }
+        
+        .bookmaker-tab-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+        }
+        
+        .bookmaker-tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.7);
+            transform: translateY(-1px);
+        }
+        
+        /* Secciones del bookmaker */
+        .bookmaker-section {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .bookmaker-section.hidden {
+            display: none;
+        }
+        
+        /* Estilos para el selector de casino */
+        .casino-selector {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .casino-selector.active {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        .casino-selector.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+        }
+        
+        .casino-selector:hover:not(.active) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="font-inter text-white minimal-bg overflow-x-hidden">
+    <!-- Elementos decorativos ultra sutiles -->
+    <div class="decorative-dot" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="decorative-dot" style="top: 60%; right: 15%; animation-delay: 3s;"></div>
+    <div class="decorative-dot" style="bottom: 30%; left: 20%; animation-delay: 6s;"></div>
+
+    <!-- Sistema de notificaciones -->
+    <div id="notification-container"></div>
+    
+    <!-- Navbar ultra minimalista -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glassmorphism border-b border-white/3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo ultra minimalista -->
+                <div class="flex items-center">
+                    <div class="text-base sm:text-lg font-extralight tracking-widest">
+                        <span class="hidden sm:inline">Hacks<span class="text-white/30 font-mono font-light">.</span>Casino</span>
+                        <span class="sm:hidden">H.Casino</span>
+                        <span class="text-white/20 text-xs font-light ml-2 sm:ml-3 tracking-wider">Admin</span>
+                    </div>
+                </div>
+                
+                <!-- Usuario y logout ultra elegante -->
+                <div class="flex items-center space-x-2 sm:space-x-6">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <span class="hidden sm:inline text-white/60 text-sm font-light tracking-wide">{{ user.email }}</span>
+                        {% set username = user.email.split('@')[0] %}
+                        <span class="sm:hidden text-white/60 text-xs font-light">{{ username[:8] }}...</span>
+                    </div>
+                    <a href="/logout" class="btn-minimal px-3 sm:px-4 py-2 rounded-full text-white/40 hover:text-white text-xs tracking-wider">
+                        <span class="hidden sm:inline">Cerrar Sesión</span>
+                        <span class="sm:hidden">Salir</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <!-- Hero Section ultra minimalista -->
+            <div class="mb-16 animate-fade-in">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-extralight text-white/90 mb-3 tracking-wide">
+                        Panel de Control
+                    </h1>
+                    <p class="text-white/40 text-sm font-light tracking-wider">
+                        Gestión avanzada del sistema
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats Cards ultra elegantes -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="glassmorphism rounded-2xl p-8 hover-lift relative overflow-hidden animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white/30 text-xs font-light tracking-widest uppercase">Total</span>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-extralight text-white tracking-tight">{{ users|length }}</p>
+                            <p class="text-white/50 text-sm font-light tracking-wide">Usuarios registrados</p>
+                        </div>
+                    </div>
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/[0.02] to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                </div>
+
+                <div class="glassmorphism rounded-2xl p-8 hover-lift relative overflow-hidden animate-slide-up" style="animation-delay: 0.2s;">
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-yellow-400/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-yellow-400/40 text-xs font-light tracking-widest uppercase">Pendiente</span>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-extralight text-yellow-400 tracking-tight">{{ pending_purchases|length }}</p>
+                            <p class="text-white/50 text-sm font-light tracking-wide">Compras por aprobar</p>
+                        </div>
+                    </div>
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/[0.03] to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                </div>
+
+                <div class="glassmorphism rounded-2xl p-8 hover-lift relative overflow-hidden animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-400/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-400/40 text-xs font-light tracking-widest uppercase">Aprobado</span>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-extralight text-green-400 tracking-tight">{{ approved_purchases|length }}</p>
+                            <p class="text-white/50 text-sm font-light tracking-wide">Compras completadas</p>
+                        </div>
+                    </div>
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400/[0.03] to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                </div>
+            </div>
+
+            <!-- Navegación ultra minimalista -->
+            <div class="mb-12 flex justify-center">
+                <div class="glassmorphism rounded-full p-2 border border-white/5 w-full max-w-2xl">
+                    <nav class="flex space-x-2 sm:space-x-3">
+                        <button onclick="showTab('users')" class="tab-btn active px-6 sm:px-10 py-3 rounded-full text-white/90 bg-white/5 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-1">
+                            <div class="flex items-center justify-center space-x-2 sm:space-x-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Usuarios</span>
+                                <span class="sm:hidden">Users</span>
+                            </div>
+                        </button>
+                        <button onclick="showTab('purchases')" class="tab-btn px-6 sm:px-10 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-1">
+                            <div class="flex items-center justify-center space-x-2 sm:space-x-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4-5h-.01m2.01 5h16l-1 7H6m0 0a2 2 0 100 4 2 2 0 000-4zm11 0a2 2 0 100 4 2 2 0 000-4z"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Compras</span>
+                                <span class="sm:hidden">Shop</span>
+                            </div>
+                        </button>
+                        <button onclick="showTab('bookmaker')" class="tab-btn px-6 sm:px-10 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-1">
+                            <div class="flex items-center justify-center space-x-2 sm:space-x-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                <span class="hidden sm:inline">Bookmaker</span>
+                                <span class="sm:hidden">API</span>
+                            </div>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content animate-fade-in">
+                <div class="table-container">
+                    <!-- Header de la tabla -->
+                    <div class="px-8 py-6 border-b border-white/10">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-normal text-white/90 mb-1">Usuarios Registrados</h3>
+                                <p class="text-white/60 text-sm">Gestión de usuarios y roles del sistema</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-white/70 text-sm">{{ users|length }} usuarios</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla ultra elegante y profesional -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-minimal">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th class="hidden sm:table-cell">Rol</th>
+                                    <th class="hidden md:table-cell">Registro</th>
+                                    <th>Gestión</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr class="table-row group">
+                                    <td class="table-cell">
+                                        <div class="flex items-center space-x-5">
+                                            <div class="w-10 h-10 bg-white/8 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-3 mb-1">
+                                                    <p class="text-white/85 font-normal text-base truncate">{{ user.email }}</p>
+                                                    {% if user.is_super_admin %}
+                                                    <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-light">Super Admin</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-3">
+                                                    <p class="text-white/50 text-sm font-light">ID: #{{ user.id }}</p>
+                                                    <!-- Mostrar rol en mobile -->
+                                                    <span class="sm:hidden badge 
+                                                        {% if user.role == 'Admin' %}badge-admin
+                                                        {% elif user.role == 'signals_bot' %}badge-signals
+                                                        {% elif user.role == 'community_bots' %}badge-community
+                                                        {% else %}badge-pending{% endif %}">
+                                                        {{ user.role.replace('_', ' ').title() }}
+                                                    </span>
+                                                    <!-- Mostrar fecha en mobile -->
+                                                    <p class="md:hidden text-white/50 text-sm font-light">{{ user.created_at.strftime('%d/%m/%Y') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell hidden sm:table-cell">
+                                        <span class="badge 
+                                            {% if user.role == 'Admin' %}badge-admin
+                                            {% elif user.role == 'signals_bot' %}badge-signals
+                                            {% elif user.role == 'community_bots' %}badge-community
+                                            {% else %}badge-pending{% endif %}">
+                                            {{ user.role.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td class="table-cell hidden md:table-cell">
+                                        <div class="space-y-1">
+                                            <p class="text-white/70 text-sm font-light">{{ user.created_at.strftime('%d/%m/%Y') }}</p>
+                                            <p class="text-white/40 text-xs font-light">{{ user.created_at.strftime('%H:%M') }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        {% if not user.is_super_admin %}
+                                        <button onclick="openRoleModal({{ user.id }}, '{{ user.role }}', '{{ user.email }}')" 
+                                                class="edit-btn">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                            Editar
+                                        </button>
+                                        {% else %}
+                                        <div class="flex items-center space-x-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
+                                            <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                            <span class="text-white/60 text-sm font-light">Sistema</span>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchases Tab -->
+            <div id="purchases-tab" class="tab-content hidden animate-fade-in">
+                <div class="table-container">
+                    <!-- Header de la tabla -->
+                    <div class="px-8 py-6 border-b border-white/10">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-normal text-white/90 mb-1">Gestión de Compras</h3>
+                                <p class="text-white/60 text-sm">Administración de pagos y suscripciones</p>
+                            </div>
+                            <div class="flex items-center space-x-6">
+                                <span class="text-white/70 text-sm">{{ pending_purchases|length }} pendientes</span>
+                                <span class="text-white/70 text-sm">{{ purchases|length }} total</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla ultra elegante y profesional -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-minimal">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th class="hidden sm:table-cell">Producto</th>
+                                    <th class="hidden lg:table-cell">Valor</th>
+                                    <th class="hidden md:table-cell">Estado</th>
+                                    <th class="hidden lg:table-cell">Fecha</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for purchase in purchases %}
+                                <tr class="table-row group">
+                                    <td class="table-cell">
+                                        <div class="flex items-center space-x-5">
+                                            <div class="w-10 h-10 bg-white/8 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4-5h-.01m2.01 5h16l-1 7H6m0 0a2 2 0 100 4 2 2 0 000-4zm11 0a2 2 0 100 4 2 2 0 000-4z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-3 mb-1">
+                                                    <p class="text-white/85 font-normal text-base truncate">{{ purchase.user.email }}</p>
+                                                    <span class="bg-white/10 text-white/60 text-xs px-2 py-1 rounded font-light">#{{ purchase.id }}</span>
+                                                </div>
+                                                <div class="flex flex-wrap items-center gap-3">
+                                                    <!-- Mostrar producto en mobile -->
+                                                    <span class="sm:hidden text-white/60 text-sm font-light bg-white/5 px-3 py-1 rounded border border-white/10">
+                                                        {% set product_name = products[purchase.product_id].name %}
+                                                        {{ product_name[:20] }}{% if product_name|length > 20 %}...{% endif %}
+                                                    </span>
+                                                    <!-- Mostrar estado en mobile -->
+                                                    <span class="md:hidden badge 
+                                                        {% if purchase.status == 'pending' %}badge-pending
+                                                        {% elif purchase.status == 'approved' %}badge-approved
+                                                        {% else %}badge-rejected{% endif %}">
+                                                        {{ purchase.status.title() }}
+                                                    </span>
+                                                    <!-- Mostrar valor y fecha en mobile -->
+                                                    <div class="lg:hidden flex items-center gap-4">
+                                                        <span class="text-white/70 font-mono text-sm">${{ purchase.amount }}</span>
+                                                        <span class="text-white/50 text-sm">{{ purchase.created_at.strftime('%d/%m/%Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell hidden sm:table-cell">
+                                        <div class="space-y-2">
+                                            <p class="text-white/90 font-light text-sm">{{ products[purchase.product_id].name }}</p>
+                                            <p class="text-white/50 text-xs font-light">{{ products[purchase.product_id].description[:50] }}...</p>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell hidden lg:table-cell">
+                                        <div class="space-y-1">
+                                            <p class="text-white/80 font-mono text-lg">${{ purchase.amount }}</p>
+                                            <p class="text-white/50 text-sm font-light uppercase tracking-wider">{{ purchase.currency }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell hidden md:table-cell">
+                                        <span class="badge 
+                                            {% if purchase.status == 'pending' %}badge-pending
+                                            {% elif purchase.status == 'approved' %}badge-approved
+                                            {% else %}badge-rejected{% endif %}">
+                                            {{ purchase.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td class="table-cell hidden lg:table-cell">
+                                        <div class="space-y-1">
+                                            <p class="text-white/70 text-sm font-light">{{ purchase.created_at.strftime('%d/%m/%Y') }}</p>
+                                            <p class="text-white/40 text-xs font-light">{{ purchase.created_at.strftime('%H:%M') }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <button onclick="openPurchaseModal({{ purchase.id }}, '{{ purchase.status }}', '{{ purchase.user.email }}', '{{ products[purchase.product_id].name }}')" 
+                                                class="edit-btn">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                            Editar
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookmaker Tab -->
+            <div id="bookmaker-tab" class="tab-content hidden animate-fade-in">
+                <!-- Navegación interna del Bookmaker -->
+                <div class="mb-8">
+                    <div class="glassmorphism rounded-full p-2 border border-white/5 w-full max-w-4xl mx-auto">
+                        <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto">
+                            <button onclick="showBookmakerSection('status')" class="bookmaker-tab-btn active px-4 sm:px-6 py-3 rounded-full text-white/90 bg-white/5 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-shrink-0">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span class="hidden sm:inline">Status</span>
+                                </div>
+                            </button>
+                            <button onclick="showBookmakerSection('config')" class="bookmaker-tab-btn px-4 sm:px-6 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-shrink-0">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span class="hidden sm:inline">Config</span>
+                                </div>
+                            </button>
+                            <button onclick="showBookmakerSection('editor')" class="bookmaker-tab-btn px-4 sm:px-6 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-shrink-0">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    <span class="hidden sm:inline">Editor</span>
+                                </div>
+                            </button>
+                            <button onclick="showBookmakerSection('backups')" class="bookmaker-tab-btn px-4 sm:px-6 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-shrink-0">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    <span class="hidden sm:inline">Backups</span>
+                                </div>
+                            </button>
+                            <button onclick="showBookmakerSection('actions')" class="bookmaker-tab-btn px-4 sm:px-6 py-3 rounded-full text-white/40 hover:text-white/60 font-light text-xs sm:text-sm tracking-wider transition-all duration-300 flex-shrink-0">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    <span class="hidden sm:inline">Acciones</span>
+                                </div>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Sección Status del Servidor -->
+                <div id="bookmaker-status" class="bookmaker-section">
+                    <div class="glassmorphism rounded-2xl p-8 hover-lift">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-normal text-white/90 mb-2">📡 Status del Servidor</h3>
+                                <p class="text-white/60 text-sm">Estado de la conexión y servicios</p>
+                            </div>
+                            <button onclick="checkServerStatus()" class="btn-minimal px-6 py-3 rounded-xl text-white/80 hover:text-white">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Verificar Status
+                            </button>
+                        </div>
+                        
+                        <div id="serverStatus" class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-white/20 rounded-full"></div>
+                                <span class="text-white/60 text-sm">Verificando estado del servidor...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Configuración Actual -->
+                <div id="bookmaker-config" class="bookmaker-section hidden">
+                    <div class="glassmorphism rounded-2xl p-8 hover-lift">
+                        <!-- Selector de Casino -->
+                        <div class="mb-8">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="text-base font-normal text-white/80 mb-1">🎰 Seleccionar Casino</h4>
+                                    <p class="text-white/50 text-xs">Cambia entre diferentes casinos para gestionar su configuración</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-white/60 text-xs">Puerto Activo:</span>
+                                    <span id="activePort" class="badge badge-signals">3000</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onclick="switchCasino(3000, '1XSLOT')" 
+                                        class="casino-selector active px-6 py-4 rounded-xl text-white/90 bg-white/10 border border-white/20 transition-all">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">1XSLOT</div>
+                                            <div class="text-sm text-white/60">Puerto 3000</div>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <button onclick="switchCasino(3001, '1WIN')" 
+                                        class="casino-selector px-6 py-4 rounded-xl text-white/70 bg-white/5 border border-white/10 hover:bg-white/8 transition-all">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+                                        <div>
+                                            <div class="font-medium">1WIN</div>
+                                            <div class="text-sm text-white/60">Puerto 3001</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-normal text-white/90 mb-2">⚙️ Configuración de <span id="currentCasinoName">1XSLOT</span></h3>
+                                <p class="text-white/60 text-sm">Configuración del bookmaker y conexión WebSocket</p>
+                            </div>
+                            <button onclick="loadBookmakerConfig()" class="btn-minimal px-6 py-3 rounded-xl text-white/80 hover:text-white">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Cargar Config
+                            </button>
+                        </div>
+                        
+                        <div id="bookmakerConfig" class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-white/20 rounded-full animate-pulse"></div>
+                                <span class="text-white/60 text-sm">Haz clic en "Cargar Config" para ver la configuración actual</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Editor de Configuración -->
+                <div id="bookmaker-editor" class="bookmaker-section hidden">
+                    <div class="glassmorphism rounded-2xl p-8 hover-lift">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-normal text-white/90 mb-2">✏️ Editor de Configuración</h3>
+                            <p class="text-white/60 text-sm">Modifica los parámetros del bookmaker</p>
+                        </div>
+                        
+                        <form id="bookmakerForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-white/80 text-sm font-light mb-2">ID del Bookmaker</label>
+                                    <input type="number" id="bookmakerId" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors" placeholder="1" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-white/80 text-sm font-light mb-2">Nombre del Bookmaker</label>
+                                    <input type="text" id="bookmakerName" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors" placeholder="1XSLOT" required>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-white/80 text-sm font-light mb-2">URL del WebSocket</label>
+                                    <input type="url" id="bookmakerUrl" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors" placeholder="wss://ejemplo.com/websocket" required>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-white/80 text-sm font-light mb-2">Primer Mensaje (Base64)</label>
+                                    <textarea id="bookmakerFirstMessage" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors font-mono text-sm" placeholder="Mensaje en formato base64" required></textarea>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-white/80 text-sm font-light mb-2">Segundo Mensaje (Base64)</label>
+                                    <textarea id="bookmakerSecondMessage" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors font-mono text-sm" placeholder="Mensaje en formato base64" required></textarea>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-white/80 text-sm font-light mb-2">Tercer Mensaje (Base64)</label>
+                                    <textarea id="bookmakerThirdMessage" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white/90 placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors font-mono text-sm" placeholder="Mensaje en formato base64" required></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-4">
+                                <button type="button" onclick="updateBookmakerConfig()" class="btn-minimal px-8 py-3 rounded-xl text-white/90 hover:text-white bg-white/10 hover:bg-white/15 transition-all">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Actualizar Configuración
+                                </button>
+                                
+                                <button type="button" onclick="updatePartialConfig()" class="btn-minimal px-8 py-3 rounded-xl text-white/80 hover:text-white bg-white/5 hover:bg-white/10 transition-all">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Actualización Parcial
+                                </button>
+                                
+                                <button type="button" onclick="deleteBookmakerConfig()" class="btn-minimal px-8 py-3 rounded-xl text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 transition-all">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Eliminar Configuración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sección Gestión de Backups -->
+                <div id="bookmaker-backups" class="bookmaker-section hidden">
+                    <div class="glassmorphism rounded-2xl p-8 hover-lift">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-normal text-white/90 mb-2">💾 Gestión de Backups</h3>
+                                <p class="text-white/60 text-sm">Backups automáticos y restauración de configuraciones</p>
+                            </div>
+                            <button onclick="loadBackups()" class="btn-minimal px-6 py-3 rounded-xl text-white/80 hover:text-white">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Cargar Backups
+                            </button>
+                        </div>
+                        
+                        <div id="backupsList" class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-white/20 rounded-full"></div>
+                                <span class="text-white/60 text-sm">Haz clic en "Cargar Backups" para ver los backups disponibles</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Acciones del Sistema -->
+                <div id="bookmaker-actions" class="bookmaker-section hidden">
+                    <div class="glassmorphism rounded-2xl p-8 hover-lift">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-normal text-white/90 mb-2">⚡ Acciones del Sistema</h3>
+                            <p class="text-white/60 text-sm">Acciones críticas para el funcionamiento del bookmaker</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <button onclick="restartSystem()" class="btn-minimal px-8 py-6 rounded-xl text-yellow-400 hover:text-yellow-300 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all h-full">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <div class="text-lg font-medium mb-2">🔄 Reiniciar Sistema</div>
+                                    <div class="text-sm text-yellow-400/80">Reinicia todos los servicios y aplica nueva configuración</div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="testConnection()" class="btn-minimal px-8 py-6 rounded-xl text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 transition-all h-full">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                    <div class="text-lg font-medium mb-2">🔗 Probar Conexión</div>
+                                    <div class="text-sm text-blue-400/80">Prueba la conexión WebSocket del bookmaker</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar roles -->
+    <div id="roleModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Rol de Usuario</h3>
+                <p class="modal-subtitle" id="roleModalUserEmail"></p>
+            </div>
+            <div class="modal-options">
+                <div class="modal-option" data-role="pending">
+                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Pendiente</span>
+                </div>
+                <div class="modal-option" data-role="signals_bot">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    <span>Signals Bot</span>
+                </div>
+                <div class="modal-option" data-role="community_bots">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span>Community Bots</span>
+                </div>
+                <div class="modal-option" data-role="Admin">
+                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.5-2a11.95 11.95 0 00-6.5-2c-2.5 0-4.9.8-6.5 2M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Admin</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeRoleModal()" class="modal-btn modal-btn-cancel">Cancelar</button>
+                <button onclick="saveUserRole()" class="modal-btn modal-btn-save">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar estado de compras -->
+    <div id="purchaseModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Estado de Compra</h3>
+                <p class="modal-subtitle" id="purchaseModalInfo"></p>
+            </div>
+            <div class="modal-options">
+                <div class="modal-option" data-status="pending">
+                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Pendiente</span>
+                </div>
+                <div class="modal-option" data-status="approved">
+                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Aprobar</span>
+                </div>
+                <div class="modal-option" data-status="rejected">
+                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Rechazar</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closePurchaseModal()" class="modal-btn modal-btn-cancel">Cancelar</button>
+                <button onclick="savePurchaseStatus()" class="modal-btn modal-btn-save">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de notificaciones ultra profesional
+        function showNotification(message, type = 'success', duration = 4000) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            ${type === 'success' ? 
+                                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>'
+                            }
+                        </div>
+                        <div>
+                            <p class="font-light">${message}</p>
+                        </div>
+                    </div>
+                    <button onclick="closeNotification(this)" class="ml-4 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Activar animación
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto-cerrar
+            setTimeout(() => closeNotification(notification), duration);
+        }
+        
+        function closeNotification(element) {
+            const notification = element.closest ? element.closest('.notification') : element;
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 400);
+        }
+
+        // Función para mostrar pestañas con animaciones elegantes
+        function showTab(tabName) {
+            // Ocultar todos los contenidos de pestañas
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remover clase activa de todos los botones y restaurar apariencia base
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-white/90', 'bg-white/5');
+                btn.classList.add('text-white/40');
+            });
+            
+            // Mostrar contenido de pestaña seleccionada
+            const targetTab = document.getElementById(tabName + '-tab');
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+            
+            // Agregar clase activa al botón clickeado
+            const activeBtn = event.target.closest('.tab-btn');
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.remove('text-white/40');
+                activeBtn.classList.add('text-white/90', 'bg-white/5');
+            }
+        }
+
+        // Función para mostrar secciones del bookmaker
+        function showBookmakerSection(sectionName) {
+            // Ocultar todas las secciones del bookmaker
+            document.querySelectorAll('.bookmaker-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Remover clase activa de todos los botones del bookmaker y restaurar apariencia base
+            document.querySelectorAll('.bookmaker-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('text-white/90', 'bg-white/5');
+                btn.classList.add('text-white/40');
+            });
+            
+            // Mostrar sección seleccionada
+            const targetSection = document.getElementById('bookmaker-' + sectionName);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+            
+            // Agregar clase activa al botón clickeado
+            const activeBtn = event.target.closest('.bookmaker-tab-btn');
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.remove('text-white/40');
+                activeBtn.classList.add('text-white/90', 'bg-white/5');
+            }
+        }
+
+        // Función ultra elegante para actualizar roles
+        function updateUserRole(userId, newRole) {
+            // Mostrar indicador de carga
+            showNotification('Actualizando rol de usuario...', 'success', 1000);
+            
+            fetch(`/admin/update-role/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `role=${newRole}`
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error:', response.status, errorText);
+                    throw new Error(`Error ${response.status}: No se pudo actualizar el rol`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✨ Rol actualizado exitosamente a ${newRole.replace('_', ' ').toUpperCase()}`, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('❌ Error al actualizar rol: ' + (data.error || data.message), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error completo:', error);
+                showNotification('❌ ' + error.message, 'error');
+            });
+        }
+
+        // Función ultra elegante para actualizar estado de compras
+        function updatePurchaseStatus(purchaseId, newStatus) {
+            // Mostrar indicador de carga
+            const statusText = {
+                'pending': 'PENDIENTE',
+                'approved': 'APROBADO', 
+                'rejected': 'RECHAZADO'
+            };
+            
+            const statusIcons = {
+                'pending': '⏳',
+                'approved': '✅', 
+                'rejected': '❌'
+            };
+            
+            showNotification(`Actualizando estado de compra...`, 'success', 1000);
+            
+            fetch(`/admin/purchase/${purchaseId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error:', response.status, errorText);
+                    throw new Error(`Error ${response.status}: No se pudo actualizar el estado`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const emoji = statusIcons[newStatus] || '⏳';
+                    showNotification(`${emoji} Compra marcada como ${statusText[newStatus]}`, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('❌ Error al actualizar estado: ' + (data.error || data.message), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error completo:', error);
+                showNotification('❌ ' + error.message, 'error');
+            });
+        }
+
+        // Variables globales para los modales
+        let currentUserId = null;
+        let currentUserRole = null;
+        let currentPurchaseId = null;
+        let currentPurchaseStatus = null;
+
+        // Funciones para modal de roles
+        function openRoleModal(userId, currentRole, userEmail) {
+            currentUserId = userId;
+            currentUserRole = currentRole;
+            
+            document.getElementById('roleModalUserEmail').textContent = userEmail;
+            
+            // Limpiar selecciones previas
+            document.querySelectorAll('#roleModal .modal-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Seleccionar el rol actual
+            const currentOption = document.querySelector(`#roleModal .modal-option[data-role="${currentRole}"]`);
+            if (currentOption) {
+                currentOption.classList.add('selected');
+            }
+            
+            // Mostrar modal
+            document.getElementById('roleModal').classList.add('show');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('show');
+            currentUserId = null;
+            currentUserRole = null;
+        }
+
+        function saveUserRole() {
+            const selectedOption = document.querySelector('#roleModal .modal-option.selected');
+            if (!selectedOption) {
+                showNotification('Por favor selecciona un rol', 'error');
+                return;
+            }
+
+            const newRole = selectedOption.getAttribute('data-role');
+            if (newRole === currentUserRole) {
+                closeRoleModal();
+                return;
+            }
+
+            // Mostrar indicador de carga
+            showNotification('Actualizando rol de usuario...', 'success', 1000);
+            
+            fetch(`/admin/update-role/${currentUserId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `role=${newRole}`
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error:', response.status, errorText);
+                    throw new Error(`Error ${response.status}: No se pudo actualizar el rol`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✨ Rol actualizado exitosamente a ${newRole.replace('_', ' ').toUpperCase()}`, 'success');
+                    closeRoleModal();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('❌ Error al actualizar rol: ' + (data.error || data.message), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error completo:', error);
+                showNotification('❌ ' + error.message, 'error');
+            });
+        }
+
+        // Funciones para modal de compras
+        function openPurchaseModal(purchaseId, currentStatus, userEmail, productName) {
+            currentPurchaseId = purchaseId;
+            currentPurchaseStatus = currentStatus;
+            
+            document.getElementById('purchaseModalInfo').textContent = `${userEmail} - ${productName}`;
+            
+            // Limpiar selecciones previas
+            document.querySelectorAll('#purchaseModal .modal-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Seleccionar el estado actual
+            const currentOption = document.querySelector(`#purchaseModal .modal-option[data-status="${currentStatus}"]`);
+            if (currentOption) {
+                currentOption.classList.add('selected');
+            }
+            
+            // Mostrar modal
+            document.getElementById('purchaseModal').classList.add('show');
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('show');
+            currentPurchaseId = null;
+            currentPurchaseStatus = null;
+        }
+
+        function savePurchaseStatus() {
+            const selectedOption = document.querySelector('#purchaseModal .modal-option.selected');
+            if (!selectedOption) {
+                showNotification('Por favor selecciona un estado', 'error');
+                return;
+            }
+
+            const newStatus = selectedOption.getAttribute('data-status');
+            if (newStatus === currentPurchaseStatus) {
+                closePurchaseModal();
+                return;
+            }
+
+            // Mostrar indicador de carga
+            const statusText = {
+                'pending': 'PENDIENTE',
+                'approved': 'APROBADO', 
+                'rejected': 'RECHAZADO'
+            };
+            
+            const statusIcons = {
+                'pending': '⏳',
+                'approved': '✅', 
+                'rejected': '❌'
+            };
+            
+            showNotification(`Actualizando estado de compra...`, 'success', 1000);
+            
+            fetch(`/admin/purchase/${currentPurchaseId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error:', response.status, errorText);
+                    throw new Error(`Error ${response.status}: No se pudo actualizar el estado`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const emoji = statusIcons[newStatus] || '⏳';
+                    showNotification(`${emoji} Compra marcada como ${statusText[newStatus]}`, 'success');
+                    closePurchaseModal();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('❌ Error al actualizar estado: ' + (data.error || data.message), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error completo:', error);
+                showNotification('❌ ' + error.message, 'error');
+            });
+        }
+
+        // Event listeners para las opciones de los modales
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listeners para opciones de roles
+            document.querySelectorAll('#roleModal .modal-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#roleModal .modal-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Event listeners para opciones de compras
+            document.querySelectorAll('#purchaseModal .modal-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#purchaseModal .modal-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Cerrar modales al hacer click fuera
+            document.getElementById('roleModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeRoleModal();
+                }
+            });
+
+            document.getElementById('purchaseModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePurchaseModal();
+                }
+            });
+
+            // Cerrar modales con ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeRoleModal();
+                    closePurchaseModal();
+                }
+            });
+        });
+
+        // Inicialización cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar animaciones de entrada secuenciales
+            const cards = document.querySelectorAll('.animate-slide-up');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Mostrar notificación de bienvenida
+            setTimeout(() => {
+                showNotification('Panel de administración cargado correctamente', 'success', 3000);
+            }, 500);
+        });
+
+        // ===== FUNCIONES DEL BOOKMAKER =====
+        
+        // Variables globales para el selector de casino
+        let currentCasinoPort = 3000;
+        let currentCasinoName = '1XSLOT';
+        let casinoConfigs = {
+            3000: { name: '1XSLOT', baseUrl: 'https://statszones.com:3000' },
+            3001: { name: '1WIN', baseUrl: 'https://statszones.com:3001' }
+        };
+
+        // Función para cambiar de casino
+        function switchCasino(port, name) {
+            currentCasinoPort = port;
+            currentCasinoName = name;
+            
+            // Actualizar UI del selector
+            document.querySelectorAll('.casino-selector').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            event.target.closest('.casino-selector').classList.add('active');
+            
+            // Actualizar indicador de puerto
+            document.getElementById('activePort').textContent = port;
+            document.getElementById('activePort').className = `badge ${port === 3000 ? 'badge-signals' : 'badge-community'}`;
+            
+            // Actualizar nombre del casino en el título
+            document.getElementById('currentCasinoName').textContent = name;
+            
+            // Recargar configuración del casino seleccionado
+            loadBookmakerConfig();
+            
+            // Mostrar notificación
+            showNotification(`🎰 Cambiado a ${name} (Puerto ${port})`, 'success');
+        }
+
+        // Función para obtener la URL base del casino actual
+        function getCurrentCasinoUrl() {
+            return casinoConfigs[currentCasinoPort].baseUrl;
+        }
+        
+        // Verificar status del servidor
+        async function checkServerStatus() {
+            const statusContainer = document.getElementById('serverStatus');
+            const baseUrl = getCurrentCasinoUrl();
+            
+            statusContainer.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                    <span class="text-white/60 text-sm">Verificando estado de ${currentCasinoName}...</span>
+                </div>
+            `;
+            
+            try {
+                // Verificar API de status del casino seleccionado
+                const response = await fetch(`${baseUrl}/api/status`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusContainer.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                <span class="text-green-400 text-sm font-medium">✅ ${currentCasinoName} conectado y funcionando</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Casino</div>
+                                    <div class="text-white/90 font-medium">${currentCasinoName}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Puerto</div>
+                                    <div class="text-white/90 font-medium">${currentCasinoPort}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Clientes WS</div>
+                                    <div class="text-white/90 font-medium">${data.data?.websocket_clients || 0}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                statusContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                            <span class="text-red-400 text-sm font-medium">❌ Error de conexión con ${currentCasinoName}: ${error.message}</span>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                            <div class="text-red-400 text-sm">
+                                <strong>Posibles causas:</strong>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>El servidor no está ejecutándose</li>
+                                    <li>Problemas de red o firewall</li>
+                                    <li>Certificados SSL inválidos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Cargar configuración del bookmaker
+        async function loadBookmakerConfig() {
+            const configContainer = document.getElementById('bookmakerConfig');
+            const baseUrl = getCurrentCasinoUrl();
+            
+            configContainer.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                    <span class="text-white/60 text-sm">Cargando configuración de ${currentCasinoName}...</span>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/config`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const config = data.data;
+                    
+                    // Llenar el formulario
+                    document.getElementById('bookmakerId').value = config.id || '';
+                    document.getElementById('bookmakerName').value = config.name || '';
+                    document.getElementById('bookmakerUrl').value = config.url_websocket || '';
+                    document.getElementById('bookmakerFirstMessage').value = config.first_message || '';
+                    document.getElementById('bookmakerSecondMessage').value = config.second_message || '';
+                    document.getElementById('bookmakerThirdMessage').value = config.third_message || '';
+                    
+                    // Mostrar configuración
+                    configContainer.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                <span class="text-green-400 text-sm font-medium">✅ Configuración cargada exitosamente</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">ID</div>
+                                    <div class="text-white/90 font-medium">${config.id}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Nombre</div>
+                                    <div class="text-white/90 font-medium">${config.name}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10 md:col-span-2">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">URL WebSocket</div>
+                                    <div class="text-white/90 font-mono text-sm break-all">${config.url_websocket}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Última Actualización</div>
+                                    <div class="text-white/90 text-sm">${new Date(config.last_updated).toLocaleString()}</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                                    <div class="text-white/60 text-xs uppercase tracking-wider mb-1">Estado</div>
+                                    <div class="text-white/90 font-medium">Activo</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    showNotification('✅ Configuración del bookmaker cargada exitosamente', 'success');
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                configContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                            <span class="text-red-400 text-sm font-medium">❌ Error al cargar configuración: ${error.message}</span>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                            <div class="text-red-400 text-sm">
+                                <strong>Verifica que:</strong>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>El servidor esté ejecutándose</li>
+                                    <li>La API esté disponible en /api/config</li>
+                                    <li>El archivo bookmaker.json exista</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                showNotification('❌ Error al cargar configuración: ' + error.message, 'error');
+            }
+        }
+
+        // Actualizar configuración completa del bookmaker
+        async function updateBookmakerConfig() {
+            const formData = {
+                id: parseInt(document.getElementById('bookmakerId').value),
+                name: document.getElementById('bookmakerName').value.trim(),
+                url_websocket: document.getElementById('bookmakerUrl').value.trim(),
+                first_message: document.getElementById('bookmakerFirstMessage').value.trim(),
+                second_message: document.getElementById('bookmakerSecondMessage').value.trim(),
+                third_message: document.getElementById('bookmakerThirdMessage').value.trim()
+            };
+            
+            // Validaciones
+            if (!formData.id || !formData.name || !formData.url_websocket || !formData.first_message || !formData.second_message || !formData.third_message) {
+                showNotification('❌ Todos los campos son requeridos', 'error');
+                return;
+            }
+            
+            if (!formData.url_websocket.startsWith('wss://')) {
+                showNotification('❌ La URL del WebSocket debe comenzar con wss://', 'error');
+                return;
+            }
+            
+            // Validar formato base64 básico
+            const base64Regex = /^[A-Za-z0-9+/=]+$/;
+            if (!base64Regex.test(formData.first_message) || !base64Regex.test(formData.second_message) || !base64Regex.test(formData.third_message)) {
+                showNotification('❌ Todos los mensajes deben estar en formato base64 válido', 'error');
+                return;
+            }
+            
+            try {
+                showNotification(`⏳ Actualizando configuración de ${currentCasinoName}...`, 'success', 2000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Configuración del bookmaker actualizada exitosamente', 'success');
+                    if (data.backup_created) {
+                        showNotification('📦 Backup automático creado: ' + data.backup_created, 'success', 4000);
+                    }
+                    
+                    // Recargar configuración
+                    setTimeout(() => loadBookmakerConfig(), 1000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                showNotification('❌ Error al actualizar configuración: ' + error.message, 'error');
+            }
+        }
+
+        // Actualización parcial de configuración
+        async function updatePartialConfig() {
+            const formData = {};
+            
+            // Solo incluir campos que no estén vacíos
+            const id = document.getElementById('bookmakerId').value.trim();
+            const name = document.getElementById('bookmakerName').value.trim();
+            const url = document.getElementById('bookmakerUrl').value.trim();
+            const firstMsg = document.getElementById('bookmakerFirstMessage').value.trim();
+            const secondMsg = document.getElementById('bookmakerSecondMessage').value.trim();
+            const thirdMsg = document.getElementById('bookmakerThirdMessage').value.trim();
+            
+            if (id) formData.id = parseInt(id);
+            if (name) formData.name = name;
+            if (url) formData.url_websocket = url;
+            if (firstMsg) formData.first_message = firstMsg;
+            if (secondMsg) formData.second_message = secondMsg;
+            if (thirdMsg) formData.third_message = thirdMsg;
+            
+            if (Object.keys(formData).length === 0) {
+                showNotification('❌ Debe proporcionar al menos un campo para actualizar', 'error');
+                return;
+            }
+            
+            // Validaciones para campos específicos
+            if (formData.url_websocket && !formData.url_websocket.startsWith('wss://')) {
+                showNotification('❌ La URL del WebSocket debe comenzar con wss://', 'error');
+                return;
+            }
+            
+            const base64Regex = /^[A-Za-z0-9+/=]+$/;
+            if ((formData.first_message && !base64Regex.test(formData.first_message)) ||
+                (formData.second_message && !base64Regex.test(formData.second_message)) ||
+                (formData.third_message && !base64Regex.test(formData.third_message))) {
+                showNotification('❌ Los mensajes deben estar en formato base64 válido', 'error');
+                return;
+            }
+            
+            try {
+                showNotification(`⏳ Actualizando campos específicos de ${currentCasinoName}...`, 'success', 2000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/config`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Campos específicos actualizados exitosamente', 'success');
+                    if (data.backup_created) {
+                        showNotification('📦 Backup automático creado: ' + data.backup_created, 'success', 4000);
+                    }
+                    if (data.updated_fields) {
+                        showNotification('🔄 Campos actualizados: ' + data.updated_fields.join(', '), 'success', 4000);
+                    }
+                    
+                    // Recargar configuración
+                    setTimeout(() => loadBookmakerConfig(), 1000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                showNotification('❌ Error al actualizar campos: ' + error.message, 'error');
+            }
+        }
+
+        // Eliminar configuración del bookmaker
+        async function deleteBookmakerConfig() {
+            if (!confirm('⚠️ ¿Estás seguro de que quieres eliminar la configuración del bookmaker? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            try {
+                showNotification(`⏳ Eliminando configuración de ${currentCasinoName}...`, 'success', 2000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/config`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Configuración del bookmaker eliminada exitosamente', 'success');
+                    if (data.backup_created) {
+                        showNotification('📦 Backup automático creado: ' + data.backup_created, 'success', 4000);
+                    }
+                    
+                    // Limpiar formulario
+                    document.getElementById('bookmakerForm').reset();
+                    
+                    // Recargar configuración
+                    setTimeout(() => loadBookmakerConfig(), 1000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                showNotification('❌ Error al eliminar configuración: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar backups disponibles
+        async function loadBackups() {
+            const backupsContainer = document.getElementById('backupsList');
+            backupsContainer.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                    <span class="text-white/60 text-sm">Cargando backups...</span>
+                </div>
+            `;
+            
+            try {
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/config/backups`);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const backups = data.data;
+                    
+                    backupsContainer.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                <span class="text-green-400 text-sm font-medium">✅ ${backups.length} backups disponibles</span>
+                            </div>
+                            <div class="space-y-3">
+                                ${backups.map(backup => `
+                                    <div class="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/8 transition-colors">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1">
+                                                <div class="text-white/90 font-medium mb-1">${backup.filename}</div>
+                                                <div class="text-white/60 text-sm">
+                                                    Creado: ${new Date(backup.created_at).toLocaleString()} | 
+                                                    Tamaño: ${(backup.size / 1024).toFixed(2)} KB
+                                                </div>
+                                            </div>
+                                            <button onclick="restoreBackup('${backup.filename}')" 
+                                                    class="btn-minimal px-4 py-2 rounded-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/15 transition-all">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                                </svg>
+                                                Restaurar
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    showNotification('✅ Backups cargados exitosamente', 'success');
+                } else {
+                    backupsContainer.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                                <span class="text-yellow-400 text-sm font-medium">⚠️ No hay backups disponibles</span>
+                            </div>
+                            <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                                <div class="text-yellow-400 text-sm">
+                                    Los backups se crean automáticamente cuando:
+                                    <ul class="list-disc list-inside mt-2 space-y-1">
+                                        <li>Actualizas la configuración</li>
+                                        <li>Eliminas la configuración</li>
+                                        <li>Restauras desde un backup</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                backupsContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                            <span class="text-red-400 text-sm font-medium">❌ Error al cargar backups: ${error.message}</span>
+                        </div>
+                    </div>
+                `;
+                
+                showNotification('❌ Error al cargar backups: ' + error.message, 'error');
+            }
+        }
+
+        // Restaurar configuración desde backup
+        async function restoreBackup(filename) {
+            if (!confirm(`⚠️ ¿Estás seguro de que quieres restaurar la configuración desde ${filename}?`)) {
+                return;
+            }
+            
+            try {
+                showNotification(`⏳ Restaurando configuración de ${currentCasinoName} desde backup...`, 'success', 2000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/config/restore/${filename}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Configuración restaurada exitosamente desde backup', 'success');
+                    showNotification('📦 Backup usado: ' + data.backup_used, 'success', 4000);
+                    if (data.current_backup_created) {
+                        showNotification('📦 Backup de seguridad creado: ' + data.current_backup_created, 'success', 4000);
+                    }
+                    
+                    // Recargar configuración y backups
+                    setTimeout(() => {
+                        loadBookmakerConfig();
+                        loadBackups();
+                    }, 1000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                showNotification('❌ Error al restaurar backup: ' + error.message, 'error');
+            }
+        }
+
+        // Reiniciar todo el sistema
+        async function restartSystem() {
+            if (!confirm('⚠️ ¿Estás seguro de que quieres reiniciar todo el sistema?\n\nEsto incluye:\n• Reiniciar la conexión WebSocket\n• Aplicar nueva configuración\n• Reiniciar todos los servicios\n\n¿Continuar?')) {
+                return;
+            }
+            
+            try {
+                showNotification(`🔄 Reiniciando sistema de ${currentCasinoName}...`, 'warning', 3000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/restart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Reinicio del sistema iniciado exitosamente', 'success');
+                    showNotification('⏳ El sistema se está reiniciando...', 'info', 5000);
+                    
+                    // Mostrar indicador de reinicio
+                    showSystemRestartIndicator();
+                    
+                    // Recargar configuración después del reinicio
+                    setTimeout(() => {
+                        loadBookmakerConfig();
+                        hideSystemRestartIndicator();
+                    }, 8000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido durante el reinicio');
+                }
+            } catch (error) {
+                showNotification('❌ Error al reiniciar sistema: ' + error.message, 'error');
+            }
+        }
+
+        // Mostrar indicador de reinicio del sistema
+        function showSystemRestartIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'restartIndicator';
+            indicator.className = 'fixed top-4 right-4 bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 text-yellow-300 z-50';
+            indicator.innerHTML = `
+                <div class="flex flex-col space-y-2">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
+                        <div>
+                            <div class="font-medium">🔄 Sistema Reiniciándose</div>
+                            <div class="text-sm text-yellow-400/80">Aplicando nueva configuración...</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-yellow-400/60">Esto puede tomar unos segundos</div>
+                </div>
+            `;
+            document.body.appendChild(indicator);
+        }
+
+        // Ocultar indicador de reinicio
+        function hideSystemRestartIndicator() {
+            const indicator = document.getElementById('restartIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Probar conexión WebSocket del bookmaker
+        async function testConnection() {
+            try {
+                showNotification(`🔗 Probando conexión WebSocket de ${currentCasinoName}...`, 'success', 2000);
+                
+                const baseUrl = getCurrentCasinoUrl();
+                const response = await fetch(`${baseUrl}/api/test-connection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Conexión WebSocket exitosa', 'success');
+                    showNotification(`📡 Estado: ${data.status} | Latencia: ${data.latency}ms`, 'success', 4000);
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                showNotification('❌ Error al probar conexión: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

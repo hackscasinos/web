@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Signals</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para el sidebar */
+        #sidebar {
+            transform: translateX(0) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        
+        /* Layout principal optimizado para desktop */
+        main {
+            margin-left: 16rem; /* 256px = 16rem */
+            transition: margin-left 0.3s ease;
+            width: auto; /* Dejar que se ajuste naturalmente */
+            overflow-x: hidden; /* Prevenir scroll horizontal */
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%) !important;
+                z-index: 9999 !important;
+            }
+            
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            /* Botón de toggle siempre visible en móvil */
+            #mobileToggleBtn {
+                display: block !important;
+                z-index: 10000 !important;
+            }
+        }
+        
+        /* Desktop: sidebar siempre visible y main pegado */
+        @media (min-width: 1024px) {
+            #sidebar {
+                transform: translateX(0) !important;
+                z-index: 40 !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 4rem !important; /* 64px para el navbar */
+                height: calc(100vh - 4rem) !important;
+                width: 16rem !important; /* 256px */
+            }
+            
+            main {
+                margin-left: 16rem !important; /* Exactamente el ancho del sidebar */
+                width: auto !important; /* Se ajusta naturalmente */
+                min-height: calc(100vh - 4rem) !important;
+                overflow-x: hidden !important; /* Prevenir scroll horizontal */
+            }
+            
+            #mobileToggleBtn {
+                display: none !important;
+            }
+        }
+        
+        /* Scrollbar personalizado */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Estilos específicos para la tabla con scroll */
+        .table-scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Hacer las filas de la tabla más compactas */
+        .compact-table td {
+            padding: 0.5rem 1rem;
+        }
+        
+        .compact-table th {
+            padding: 0.75rem 1rem;
+        }
+        
+        /* Animación suave para el scroll */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        /* Indicador de scroll más visible */
+        .scroll-indicator {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Forzar visibilidad del sidebar en todos los casos */
+        #sidebar.show-mobile {
+            transform: translateX(0) !important;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* Asegurar que el contenido principal no se superponga */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Optimización para pantallas muy grandes */
+        @media (min-width: 1440px) {
+            main {
+                margin-left: 16rem !important;
+                width: auto !important;
+            }
+        }
+        
+        /* Prevenir scroll horizontal global */
+        body {
+            overflow-x: hidden;
+        }
+        
+        html {
+            overflow-x: hidden;
+        }
+        
+        /* Estilos para los resultados del juego */
+        .result-item {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .result-item:active {
+            transform: translateY(0);
+        }
+        
+
+        
+        /* Estilos para el contenedor de resultados expandido */
+        .results-expanded {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Estilos para el botón de ver más/menos */
+        .results-toggle-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .results-toggle-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* Estilos mejorados para los resultados */
+        .result-item {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+        
+        .result-item:active {
+            transform: translateY(0);
+        }
+        
+
+    </style>
+</head>
+<body class="bg-black text-white font-sans antialiased">
+    <!-- Navbar Ultra-Minimalista con Botón de Menú -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/5">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo y Título -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-xl border border-white/10 flex items-center justify-center">
+                        <i class="fas fa-plane text-red-400 text-sm"></i>
+                    </div>
+                    <h1 class="text-lg font-light text-white/90 tracking-wide hidden sm:block">Aviator</h1>
+                    <div id="navbarConnectionStatus" class="flex items-center space-x-2 px-2 py-1 bg-yellow-500/20 rounded-full border border-yellow-500/30">
+                        <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-yellow-400 font-medium hidden sm:block">Conectando...</span>
+                    </div>
+                </div>
+
+                <!-- Botón de Menú Móvil (Siempre Visible) -->
+                <button id="mobileMenuBtn" class="lg:hidden w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                    <i class="fas fa-bars text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                </button>
+
+                <!-- Acciones Desktop -->
+                <div class="hidden lg:flex items-center space-x-2">
+                    <button class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                        <i class="fas fa-bell text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                    </button>
+                    
+                    <div class="relative">
+                        <button id="userMenuBtn" class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-200 cursor-pointer group">
+                            <span class="text-white/60 text-sm font-medium group-hover:text-white/80 transition-colors duration-200">U</span>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="absolute right-0 top-12 w-40 bg-black/90 backdrop-blur-md border border-white/5 rounded-lg shadow-lg opacity-0 invisible scale-95 transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="/user-dashboard" class="flex items-center px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-150 group">
+                                    <i class="fas fa-chart-line text-white/50 text-xs mr-3 group-hover:text-red-400 transition-colors duration-150"></i>
+                                    <span class="text-sm">Dashboard</span>
+                                </a>
+                                <div class="border-t border-white/5 my-1"></div>
+                                <button onclick="logout()" class="w-full flex items-center px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-150 group">
+                                    <i class="fas fa-sign-out-alt text-white/50 text-xs mr-3 group-hover:text-red-400 transition-colors duration-150"></i>
+                                    <span class="text-sm">Salir</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Profesional Ultra-Avanzado -->
+    <aside id="sidebar" class="fixed left-0 top-16 h-full w-64 bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-3xl border-r border-white/10 z-40 transition-all duration-300 shadow-2xl">
+        <div class="h-full flex flex-col">
+            <!-- Header del Sidebar -->
+            <div class="p-6 border-b border-white/5">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500/30 to-orange-500/30 rounded-xl border border-white/20 flex items-center justify-center">
+                        <i class="fas fa-plane text-red-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white/90 font-semibold text-base">Aviator Pro</h2>
+                        <p class="text-white/40 text-xs">Sistema Avanzado</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación Principal -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="p-4 space-y-2">
+                    <!-- Sección Principal -->
+                    <div class="mb-4">
+                        <h3 class="text-xs font-medium text-white/40 uppercase tracking-widest mb-2 px-3">Principal</h3>
+                        <nav class="space-y-1">
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-red-400 bg-gradient-to-r from-red-500/15 to-red-500/5 rounded-xl border border-red-500/20 font-medium transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-sm"></i>
+                                    </div>
+                                    <span class="text-sm">Dashboard</span>
+                                </div>
+                                <div class="w-2 h-2 bg-red-400 rounded-full opacity-80"></div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-signal text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Señales Live</span>
+                                </div>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-chart-bar text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Análisis IA</span>
+                                </div>
+                                <span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30">PRO</span>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-history text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Historial</span>
+                                </div>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Sección Herramientas -->
+                    <div class="mb-4">
+                        <h3 class="text-xs font-medium text-white/40 uppercase tracking-widest mb-2 px-3">Herramientas</h3>
+                        <nav class="space-y-1">
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-calculator text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Calculadora</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-chart-pie text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Estadísticas</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-cog text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Configuración</span>
+                                </div>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Estadísticas en Tiempo Real -->
+                    <div class="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl border border-white/10 p-4 backdrop-blur-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-white/90">Rendimiento Hoy</h3>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-400">Live</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                                    <span class="text-xs text-white/60">Señales</span>
+                                </div>
+                                <span class="text-sm font-semibold text-red-400" id="sidebarSignals">0</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    <span class="text-xs text-white/60">Precisión</span>
+                                </div>
+                                <span class="text-sm font-semibold text-green-400" id="sidebarPrecision">0%</span>
+                            </div>
+
+                        
+                        <!-- Mini gráfico de progreso -->
+                        <div class="mt-3 pt-2 border-t border-white/5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-white/40">Progreso del día</span>
+                                <span class="text-xs text-white/60">0%</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-1.5">
+                                <div class="bg-gradient-to-r from-red-400 to-green-400 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado del Sistema -->
+                    <div class="bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-xl border border-green-500/20 p-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-green-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-green-400">Sistema Activo</p>
+                                <p class="text-xs text-green-400/60">Monitoreo 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer del Sidebar -->
+            <div class="p-4 border-t border-white/5">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-red-500/30 to-orange-500/30 rounded-lg flex items-center justify-center">
+                        <span class="text-white/80 text-sm font-medium">U</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-white/90">Usuario Pro</p>
+                        <p class="text-xs text-white/40">Plan Premium</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                        <i class="fas fa-ellipsis-v text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay para móviles con blur mejorado -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-30 lg:hidden opacity-0 pointer-events-none transition-all duration-300"></div>
+
+    <!-- Contenido Principal -->
+    <main class="pt-16 min-h-screen transition-all duration-300">
+        <div class="p-2 lg:p-2 content-wrapper">
+            <!-- Métricas Ultra-Minimalistas - 2 Columnas en Móvil -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4">
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Ganadas</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="ganadas">0</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-green-500/20 rounded-lg border border-green-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-check text-green-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-green-400 flex items-center font-medium">
+                            <i class="fas fa-arrow-up text-xs mr-1"></i>
+                            0%
+                        </span>
+                        <span class="text-white/30 ml-2 hidden lg:block">Hoy</span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Perdidas</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="perdidas">0</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-red-500/20 rounded-lg border border-red-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-times text-red-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-red-400 flex items-center font-medium">
+                            <i class="fas fa-arrow-down text-xs mr-1"></i>
+                            0%
+                        </span>
+                        <span class="text-white/30 ml-2 hidden lg:block">Hoy</span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Precisión</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="precision">0.00%</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-blue-500/20 rounded-lg border border-blue-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-bullseye text-blue-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-blue-400 flex items-center font-medium">
+                            <i class="fas fa-chart-line text-xs mr-1"></i>
+                            <span class="hidden lg:inline">En tiempo real</span>
+                            <span class="lg:hidden">Live</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Max Hate</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="maxHate">0</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-purple-500/20 rounded-lg border border-purple-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-fire text-purple-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-purple-400 flex items-center font-medium">
+                            <i class="fas fa-trophy text-xs mr-1"></i>
+                            <span class="hidden lg:inline">Racha actual</span>
+                            <span class="lg:hidden">Racha</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico y Señales Recientes - Stack en Móvil -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-4">
+                <!-- Contenedor de Señales Activas -->
+                <div class="p-4 lg:p-5 bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl lg:rounded-2xl border border-white/10 backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500/30 to-orange-500/30 rounded-xl border border-red-500/40 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-plane text-red-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-white/70">Señales</h3>
+                        <p class="text-xs text-white/50">Confirmador</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div id="connectionStatus" class="flex items-center space-x-2 px-3 py-1.5 bg-yellow-500/20 rounded-full border border-yellow-500/30">
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-yellow-400 font-medium">Conectando...</span>
+                    </div>
+                </div>
+                    </div>
+                    
+                    <!-- Contenedor de señales activas -->
+                    <div id="activeSignalsContainer" class="min-h-[12rem] lg:min-h-[14rem] space-y-3">
+                        <!-- Estado inicial -->
+                        <div id="noActiveSignals" class="h-full flex items-center justify-center py-8">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/20 flex items-center justify-center mb-4 shadow-lg mx-auto">
+                                    <i class="fas fa-plane text-white/40 text-2xl"></i>
+                                </div>
+                                <p class="text-white/50 text-sm font-medium">Esperando señales...</p>
+                                <p class="text-white/30 text-xs mt-2">Confirmador de entradas</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Solo se muestran: señales activas, gales, ganadas o perdidas -->
+                        <!-- El mensaje "Esperando señales..." solo aparece cuando no hay señales activas -->
+                        <!-- El historial se actualiza automáticamente en tiempo real -->
+                        <!-- Iconos SVG de Font Awesome para mejor calidad visual -->
+                        <!-- Orden de columnas: Tipo → Estado → Resultado → Hora → Gale → Timestamp -->
+                        <!-- Resultados con formato 2 dígitos + "x" en contenedores estilizados -->
+                    </div>
+                </div>
+
+                <!-- Configuración y Estado -->
+                <div class="p-4 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-medium text-white/70">Configuración</h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-xs text-green-400">Activo</span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-bullseye text-blue-400 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white/90">Objetivo</p>
+                                    <p class="text-xs text-white/40">Multiplicador objetivo</p>
+                                </div>
+                            </div>
+                            <span class="text-lg font-semibold text-blue-400" id="targetMultiplier">1.50x</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-redo text-purple-400 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white/90">Máx Gales</p>
+                                    <p class="text-xs text-white/40">Número máximo de gales</p>
+                                </div>
+                            </div>
+                            <span class="text-lg font-semibold text-purple-400" id="maxGales">1</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-orange-400 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white/90">Estado</p>
+                                    <p class="text-xs text-white/40">Estado actual del bot</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-green-400" id="botStatus">Activo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimos Resultados del Juego -->
+            <div class="bg-white/5 rounded-lg lg:rounded-xl border border-white/10 overflow-hidden mb-4">
+                <div class="px-2 lg:px-2 py-2 lg:py-3 border-b border-white/10">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-1 sm:space-x-2">
+                            <h3 class="text-sm font-medium text-white/70">Rondas</h3>
+                            <span id="resultsCounter" class="text-xs text-white/50 bg-white/5 px-2 py-1 rounded-full border border-white/10">
+                                0 de 0
+                            </span>
+                        </div>
+                        <div class="flex items-center space-x-2 lg:space-x-3">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-400">Live</span>
+                            </div>
+                            <div class="flex items-center space-x-1 sm:space-x-2 text-xs">
+                                <div class="w-3 h-3 rounded-full" style="background-color: rgb(52, 180, 255);"></div>
+                                <span class="text-white/60 hidden sm:inline">&lt;2.00x</span>
+                            </div>
+                            <div class="flex items-center space-x-1 sm:space-x-2 text-xs">
+                                <div class="w-3 h-3 rounded-full" style="background-color: rgb(145, 62, 248);"></div>
+                                <span class="text-white/60 hidden sm:inline">2.00-10.00x</span>
+                            </div>
+                            <div class="flex items-center space-x-1 sm:space-x-2 text-xs">
+                                <div class="w-3 h-3 rounded-full" style="background-color: rgb(192, 23, 180);"></div>
+                                <span class="text-white/60 hidden sm:inline">&gt;10.00x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contenedor de resultados con scroll interno -->
+                <div class="relative">
+                    <div class="overflow-hidden">
+                        <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                            <div id="gameResultsContainer" class="p-2 sm:p-4">
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/20 flex items-center justify-center mb-4 shadow-lg mx-auto">
+                                        <i class="fas fa-plane text-white/40 text-2xl"></i>
+                                    </div>
+                                    <p class="text-white/50 text-sm font-medium">Esperando resultados...</p>
+                                    <p class="text-white/30 text-xs mt-2">Los resultados se mostrarán aquí</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicador de scroll -->
+                    <div class="absolute bottom-2 right-2 flex items-center space-x-2 text-xs text-white/40">
+                        <div class="w-2 h-2 bg-red-400/60 rounded-full animate-pulse"></div>
+                        <span>Scroll para ver más</span>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Historial de Señales -->
+            <div class="bg-white/5 rounded-lg lg:rounded-xl border border-white/10 overflow-hidden">
+                <div class="px-4 lg:px-5 py-3 border-b border-white/10">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-white/70">Historial de Señales</h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-xs text-green-400">Actualización en tiempo real</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contenedor de la tabla con scroll interno -->
+                <div class="relative">
+                    <div class="overflow-hidden">
+                        <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                            <table class="w-full">
+                                <thead class="bg-white/5 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Tipo</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Estado</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Resultado</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Hora</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Gale</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5" id="signalsTableBody">
+                                    <!-- Las filas se generarán dinámicamente desde JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicador de scroll -->
+                    <div class="absolute bottom-2 right-2 flex items-center space-x-2 text-xs text-white/40">
+                        <div class="w-2 h-2 bg-red-400/60 rounded-full animate-pulse"></div>
+                        <span>Scroll para ver más señales</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Elementos del DOM
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const main = document.querySelector('main');
+
+        // Función para mostrar/ocultar sidebar en móviles
+        function toggleSidebar() {
+            if (window.innerWidth < 1024) {
+                const isOpen = sidebar.classList.contains('show-mobile');
+                
+                if (isOpen) {
+                    // Cerrar sidebar
+                    sidebar.classList.remove('show-mobile');
+                    mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    // Abrir sidebar
+                    sidebar.classList.add('show-mobile');
+                    mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            }
+        }
+
+        // Event listeners
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('show-mobile');
+                    mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+        }
+
+        // Cerrar sidebar con tecla Escape en móviles
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && window.innerWidth < 1024) {
+                sidebar.classList.remove('show-mobile');
+                mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+            }
+        });
+
+        // Gestos táctiles para móviles
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (window.innerWidth >= 1024) return; // Solo en móviles
+            
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe izquierda - cerrar sidebar
+                    if (sidebar.classList.contains('show-mobile')) {
+                        sidebar.classList.remove('show-mobile');
+                        mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                } else if (diff < 0) {
+                    // Swipe derecha - abrir sidebar
+                    if (!sidebar.classList.contains('show-mobile')) {
+                        sidebar.classList.add('show-mobile');
+                        mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                    }
+                }
+            }
+        }
+
+        // Asegurar que el sidebar esté visible en desktop
+        function ensureSidebarVisibility() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('show-mobile');
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.style.transform = 'translateX(0)';
+                sidebar.style.visibility = 'visible';
+                sidebar.style.opacity = '1';
+                sidebar.style.display = 'block';
+                
+                // Asegurar que el main esté correctamente posicionado
+                main.style.marginLeft = '16rem';
+                main.style.width = 'auto';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('show-mobile');
+                main.style.marginLeft = '0';
+                main.style.width = '100%';
+            }
+        }
+
+        // Ejecutar al cargar y en resize
+        window.addEventListener('resize', ensureSidebarVisibility);
+        document.addEventListener('DOMContentLoaded', ensureSidebarVisibility);
+        
+        // Ejecutar inmediatamente
+        setTimeout(ensureSidebarVisibility, 100);
+        setTimeout(ensureSidebarVisibility, 500);
+        
+        // Función adicional para optimizar el layout en desktop
+        function optimizeDesktopLayout() {
+            if (window.innerWidth >= 1024) {
+                // Asegurar que el sidebar esté fijo y visible
+                sidebar.style.position = 'fixed';
+                sidebar.style.left = '0';
+                sidebar.style.top = '4rem';
+                sidebar.style.height = 'calc(100vh - 4rem)';
+                sidebar.style.width = '16rem';
+                
+                // Asegurar que el main esté perfectamente alineado
+                main.style.marginLeft = '16rem';
+                main.style.width = 'auto';
+                main.style.minHeight = 'calc(100vh - 4rem)';
+                
+                console.log('✅ Layout de desktop optimizado');
+            }
+        }
+        
+        // Ejecutar optimización de layout
+        window.addEventListener('load', optimizeDesktopLayout);
+        setTimeout(optimizeDesktopLayout, 1000);
+
+        // ========================================
+        // SISTEMA WEBSOCKET PARA DATOS EN TIEMPO REAL
+        // ========================================
+        
+        let ws = null;
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        let isResultsExpanded = false; // Estado para mantener la vista expandida
+        
+        // Elementos del DOM para actualizar
+        const ganadasElement = document.getElementById('ganadas');
+        const perdidasElement = document.getElementById('perdidas');
+        const precisionElement = document.getElementById('precision');
+        const maxHateElement = document.getElementById('maxHate');
+        const targetMultiplierElement = document.getElementById('targetMultiplier');
+        const maxGalesElement = document.getElementById('maxGales');
+        const botStatusElement = document.getElementById('botStatus');
+        
+        // Función para conectar al WebSocket
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('wss://statszones.com:7777/');
+                
+                ws.onopen = function() {
+                    console.log('✅ Conectado al WebSocket de Aviator Signals');
+                    console.log('🌐 Servidor: wss://statszones.com:7777/');
+                    console.log('📡 Estado: Conexión establecida');
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    updateConnectionStatus(true);
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        processWebSocketMessage(data);
+                    } catch (error) {
+                        console.log('📨 Mensaje de texto recibido:', event.data);
+                        processTextMessage(event.data);
+                    }
+                };
+                
+                ws.onclose = function() {
+                    console.log('❌ Conexión WebSocket cerrada');
+                    console.log('🌐 Servidor: wss://statszones.com:7777/');
+                    console.log('📡 Estado: Desconectado');
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    
+                    // Intentar reconectar
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        console.log(`🔄 Intentando reconectar... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                        console.log('⏰ Esperando 3 segundos antes de reintentar...');
+                        setTimeout(connectWebSocket, 3000);
+                    } else {
+                        console.log('🚫 Máximo de intentos de reconexión alcanzado');
+                        console.log('💡 Verifica que el servidor esté ejecutándose en statszones.com:8888');
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('❌ Error en WebSocket:', error);
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                };
+                
+            } catch (error) {
+                console.error('❌ Error al conectar WebSocket:', error);
+            }
+        }
+        
+        // Función para procesar mensajes JSON del WebSocket
+        function processWebSocketMessage(data) {
+            console.log('📊 Datos JSON recibidos:', data);
+            console.log('📊 Tipo de mensaje:', data.type);
+            
+            switch(data.type) {
+                case 'initial_connection':
+                    console.log('🔗 Conexión inicial establecida');
+                    updateInitialData(data);
+                    break;
+                    
+                case 'signal_status':
+                    console.log('📡 Estado de señal actualizado:', data.status);
+                    console.log('📊 Estados actuales:', {
+                        signal_active: data.status.signal_active,
+                        signal_gale_active: data.status.signal_gale_active,
+                        gale_pending: data.status.gale_pending,
+                        waiting_result: data.status.waiting_result
+                    });
+                    updateSignalStatus(data.status, data.configuration);
+                    break;
+                    
+                case 'prediction_created':
+                    console.log('🎯 Nueva predicción creada:', data.prediction);
+                    // NO SE MUESTRAN PREDICCIONES EN LA UI
+                    // Solo se muestran: señales activas, gales, ganadas o perdidas
+                    // showPredictionCreated(data.prediction);
+                    break;
+                    
+                case 'signal_launched':
+                    console.log('🚀 Señal lanzada:', data.signal);
+                    showSignalLaunched(data.signal);
+                    break;
+                    
+                case 'bet_result':
+                    console.log('💰 Resultado de apuesta:', data.result);
+                    showBetResult(data.result, data.stats_update);
+                    break;
+                    
+                case 'game_update':
+                    console.log('🎮 Actualización del juego:', data.current_results);
+                    updateGameResults(data.current_results);
+                    break;
+                    
+                case 'game_history':
+                    console.log('📚 Historial del juego:', data.results);
+                    updateGameHistory(data.results);
+                    // También actualizar los resultados del juego si es el historial completo
+                    if (data.results && data.results.length > 0) {
+                        updateGameResults(data.results);
+                    }
+                    break;
+                    
+                case 'signals_history':
+                    console.log('📝 Historial de señales:', data.signals);
+                    updateSignalsHistory(data.signals);
+                    break;
+                    
+
+                    
+                case 'daily_reset':
+                    console.log('🔄 Reinicio diario:', data.message);
+                    showDailyReset(data.message);
+                    break;
+                    
+                case 'rangos_reset':
+                    console.log('🔄 Rangos reiniciados:', data.message);
+                    showRangosReset(data.message);
+                    break;
+                    
+                default:
+                    console.log('📨 Tipo de mensaje no reconocido:', data.type);
+            }
+        }
+        
+        // Función para procesar mensajes de texto (señales directas)
+        function processTextMessage(message) {
+            console.log('📨 Mensaje de texto recibido:', message);
+            // Aquí puedes procesar mensajes de texto si es necesario
+        }
+        
+        // Función para actualizar datos iniciales
+        function updateInitialData(data) {
+            if (data.status) {
+                console.log('🔗 Datos iniciales recibidos:', data.status);
+                updateSignalStatus(data.status, data.configuration);
+                
+                // Verificar si el sistema está completamente inactivo al inicio
+                const isAllInactive = !data.status.signal_active && !data.status.signal_gale_active && !data.status.gale_pending && data.status.waiting_result === 0;
+                if (isAllInactive) {
+                    console.log('🚀 Sistema iniciado en estado inactivo - Limpiando cualquier mensaje residual');
+                    clearActiveMessages();
+                }
+            }
+        }
+        
+        // Función para actualizar estado de señales
+        function updateSignalStatus(status, configuration) {
+            // Guardar el estado actual en una variable global para acceso desde otras funciones
+            window.currentSystemStatus = status;
+            
+            // Verificar si todos los estados están en false (sin actividad)
+            const isAllInactive = !status.signal_active && !status.signal_gale_active && !status.gale_pending && status.waiting_result === 0;
+            
+            console.log('📊 Estado del sistema actualizado:', {
+                signal_active: status.signal_active,
+                signal_gale_active: status.signal_gale_active,
+                gale_pending: status.gale_pending,
+                waiting_result: status.waiting_result,
+                isAllInactive: isAllInactive
+            });
+            
+            // Actualizar estado del bot
+            if (botStatusElement) {
+                if (status.signal_active) {
+                    botStatusElement.textContent = 'Señal Activa';
+                    botStatusElement.className = 'text-sm font-medium text-green-400';
+                } else if (status.signal_gale_active) {
+                    botStatusElement.textContent = 'GALE Activo';
+                    botStatusElement.className = 'text-sm font-medium text-purple-400';
+                } else if (status.gale_pending) {
+                    botStatusElement.textContent = 'Esperando GALE';
+                    botStatusElement.className = 'text-sm font-medium text-yellow-400';
+                } else {
+                    botStatusElement.textContent = 'Esperando';
+                    botStatusElement.className = 'text-sm font-medium text-blue-400';
+                }
+            }
+            
+            // Si todos los estados están inactivos, limpiar cualquier mensaje activo
+            if (isAllInactive) {
+                console.log('📱 Todos los estados están inactivos - Limpiando mensajes activos');
+                clearActiveMessages();
+            }
+            
+            // Actualizar configuración
+            if (configuration) {
+                if (targetMultiplierElement) {
+                    targetMultiplierElement.textContent = `${configuration.target}x`;
+                }
+                if (maxGalesElement) {
+                    maxGalesElement.textContent = configuration.max_gales;
+                }
+            }
+            
+            // Actualizar sidebar
+            updateSidebarStats(configuration);
+        }
+        
+        // Función para mostrar nueva predicción creada (DESHABILITADA)
+        function showPredictionCreated(prediction) {
+            // ⚠️ PREDICCIONES DESHABILITADAS - NO SE MUESTRAN EN LA UI
+            // Solo se muestran: señales activas, gales, ganadas o perdidas
+            console.log('📊 Predicción recibida pero no mostrada:', prediction);
+            console.log('ℹ️ Las predicciones están deshabilitadas por configuración');
+        }
+        
+        // Función para mostrar señal lanzada
+        function showSignalLaunched(signal) {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            // Limpiar predicción existente
+            const existingPrediction = container.querySelector('#prediction-created');
+            if (existingPrediction) {
+                existingPrediction.remove();
+            }
+            
+            // Ocultar mensaje de "Esperando señales..." cuando hay una señal activa
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            if (noSignalsDiv) {
+                noSignalsDiv.style.display = 'none';
+            }
+            
+            // Crear elemento de señal activa
+            const signalElement = document.createElement('div');
+            signalElement.id = 'signal-active';
+            signalElement.className = 'mb-3 p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/30 transition-all duration-300';
+            
+            const isGale = signal.type === 'gale';
+            const icon = isGale ? 'fas fa-redo' : 'fas fa-plane';
+            const color = isGale ? 'text-purple-400' : 'text-red-400';
+            const bgColor = isGale ? 'bg-purple-500/20' : 'bg-red-500/20';
+            
+            signalElement.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 ${bgColor} rounded-lg flex items-center justify-center">
+                        <i class="${icon} ${color} text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium ${color}">${signal.message}</div>
+                        <div class="text-xs text-white/60">Objetivo: ${signal.target}x</div>
+                        ${isGale ? `<div class="text-xs text-white/50">GALE ${signal.current_gale}/${signal.max_gales}</div>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-green-400">Activa</span>
+                    </div>
+                </div>
+            `;
+            
+            // Agregar al contenedor
+            container.appendChild(signalElement);
+            
+            // Agregar la señal al historial en tiempo real
+            addSignalToHistory(signal);
+        }
+        
+        // Función para mostrar resultado de apuesta
+        function showBetResult(result, statsUpdate) {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            // Limpiar señal activa existente
+            const existingSignal = container.querySelector('#signal-active');
+            if (existingSignal) {
+                existingSignal.remove();
+            }
+            
+            // Ocultar mensaje de "Esperando señales..." cuando hay un resultado
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            if (noSignalsDiv) {
+                noSignalsDiv.style.display = 'none';
+            }
+            
+            // Crear elemento de resultado
+            const resultElement = document.createElement('div');
+            resultElement.id = 'bet-result';
+            resultElement.className = 'mb-3 p-3 bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-lg border border-green-500/20 hover:border-green-500/30 transition-all duration-300';
+            
+            const isWin = result.status === 'ganada' || result.status === 'ganada_gale';
+            const icon = isWin ? 'fas fa-check' : 'fas fa-times';
+            const color = isWin ? 'text-green-400' : 'text-red-400';
+            const bgColor = isWin ? 'bg-green-500/20' : 'bg-red-500/20';
+            
+            resultElement.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 ${bgColor} rounded-lg flex items-center justify-center">
+                        <i class="${icon} ${color} text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium ${color}">${result.message}</div>
+                        <div class="text-xs text-white/60">${result.time}</div>
+                        ${result.gale_number > 0 ? `<div class="text-xs text-white/50">GALE ${result.gale_number}</div>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-medium ${color}">${result.multiplier.toFixed(2)}x</div>
+                    </div>
+                </div>
+            `;
+            
+            // Agregar al contenedor
+            container.appendChild(resultElement);
+            
+            // Remover después de 5 segundos
+            setTimeout(() => {
+                if (resultElement && resultElement.parentNode) {
+                    resultElement.parentNode.removeChild(resultElement);
+                    // Verificar si hay otras señales activas antes de mostrar "Esperando señales..."
+                    checkAndShowNoSignalsMessage(container);
+                }
+            }, 5000);
+            
+            // Actualizar estadísticas
+            if (statsUpdate) {
+                updateStats(statsUpdate);
+            }
+            
+            // Actualizar la señal en el historial con el resultado
+            updateSignalInHistory(result);
+        }
+        
+        // Función para limpiar todos los mensajes activos y mostrar estado inactivo
+        function clearActiveMessages() {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            // Limpiar cualquier señal activa
+            const existingSignal = container.querySelector('#signal-active');
+            if (existingSignal) {
+                existingSignal.remove();
+                console.log('🧹 Señal activa removida');
+            }
+            
+            // Limpiar cualquier resultado de apuesta
+            const existingResult = container.querySelector('#bet-result');
+            if (existingResult) {
+                existingResult.remove();
+                console.log('🧹 Resultado de apuesta removido');
+            }
+            
+            // Limpiar cualquier predicción
+            const existingPrediction = container.querySelector('#prediction-created');
+            if (existingPrediction) {
+                existingPrediction.remove();
+                console.log('🧹 Predicción removida');
+            }
+            
+            // Mostrar mensaje de "Esperando señales..."
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            if (noSignalsDiv) {
+                noSignalsDiv.style.display = 'flex';
+                console.log('📱 Mostrando mensaje "Esperando señales..." - Estado inactivo');
+            }
+        }
+        
+        // Función para verificar si debe mostrar el mensaje "Esperando señales..."
+        function checkAndShowNoSignalsMessage(container) {
+            if (!container) return;
+            
+            // Contar cuántas señales activas hay (excluyendo el mensaje de "no hay señales")
+            const activeSignals = container.querySelectorAll('#signal-active, #bet-result');
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            
+            if (activeSignals.length === 0 && noSignalsDiv) {
+                // No hay señales activas, mostrar mensaje de "Esperando señales..."
+                noSignalsDiv.style.display = 'flex';
+                console.log('📱 Mostrando mensaje "Esperando señales..." - No hay señales activas');
+            } else {
+                console.log(`📊 Ocultando mensaje "Esperando señales..." - Hay ${activeSignals.length} señales activas`);
+            }
+        }
+        
+        // Función para agregar nueva señal al historial en tiempo real
+        function addSignalToHistory(signal) {
+            const tbody = document.getElementById('signalsTableBody');
+            if (!tbody) return;
+            
+            // Crear nueva fila para la señal
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-white/5 transition-colors duration-300 animate-pulse';
+            
+            // Usar iconos SVG de Font Awesome en lugar de emojis para mejor calidad visual
+            const isGale = signal.type === 'gale';
+            const tipoIcon = isGale ? '<i class="fas fa-redo text-purple-400 text-xs"></i>' : '<i class="fas fa-plane text-red-400 text-xs"></i>';
+            const tipoText = isGale ? 'GALE' : 'Señal';
+            const estadoClass = 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+            const galeText = isGale ? `GALE ${signal.current_gale || 1}` : '-';
+            
+            // Obtener hora actual
+            const now = new Date();
+            const hora = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            
+            // Crear el HTML de la fila con iconos SVG - Nuevo orden: Tipo, Estado, Resultado, Hora, Gale, Timestamp
+            const rowHTML = `
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/20 text-white/90 border border-white/20">
+                        <span class="mr-1.5">${tipoIcon}</span>
+                        ${tipoText}
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${estadoClass}">
+                        Activada
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-white/10 text-white/70 border border-white/20" style="padding: 2px 6px;">
+                        Pendiente
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${hora}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${galeText}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-xs text-white/60">${formatTimestamp(now.toISOString())}</td>
+            `;
+            
+            newRow.innerHTML = rowHTML;
+            
+            // Agregar al principio de la tabla (nueva señal arriba)
+            if (tbody.firstChild) {
+                tbody.insertBefore(newRow, tbody.firstChild);
+            } else {
+                tbody.appendChild(newRow);
+            }
+            
+            // Remover animación después de 2 segundos
+            setTimeout(() => {
+                newRow.classList.remove('animate-pulse');
+            }, 2000);
+            
+            console.log('📝 Nueva señal agregada al historial:', signal);
+            
+            // Limpiar filas si hay más de 50 para mantener performance
+            cleanupHistoryTable();
+        }
+        
+        // Función para actualizar señal en el historial con el resultado
+        function updateSignalInHistory(result) {
+            const tbody = document.getElementById('signalsTableBody');
+            if (!tbody) return;
+            
+            // Buscar la primera fila con estado "Activada" para actualizarla
+            // Nuevo orden: Tipo(1), Estado(2), Resultado(3), Hora(4), Gale(5), Timestamp(6)
+            const rows = tbody.querySelectorAll('tr');
+            for (let row of rows) {
+                const estadoCell = row.querySelector('td:nth-child(2) span');
+                if (estadoCell && estadoCell.textContent.trim() === 'Activada') {
+                    // Actualizar esta fila con el resultado
+                    const resultadoCell = row.querySelector('td:nth-child(3)');
+                    const estadoCellSpan = row.querySelector('td:nth-child(2) span');
+                    
+                    if (resultadoCell && estadoCellSpan) {
+                        // Actualizar resultado con formato 2 dígitos y contenedor estilizado
+                        const multiplier = result.multiplier || parseFloat(result.resultado) || 0;
+                        const formattedResult = multiplier > 0 ? `${multiplier.toFixed(2)}x` : 'N/A';
+                        
+                        // Crear contenedor estilizado para el resultado
+                        const isWin = result.status === 'ganada' || result.status === 'ganada_gale';
+                        const resultBgColor = isWin ? 'bg-green-500/20' : 'bg-red-500/20';
+                        const resultTextColor = isWin ? 'text-green-400' : 'text-red-400';
+                        const resultBorderColor = isWin ? 'border-green-500/30' : 'border-red-500/30';
+                        
+                        resultadoCell.innerHTML = `
+                            <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${resultBgColor} ${resultTextColor} border ${resultBorderColor}" style="padding: 2px 6px;">
+                                ${formattedResult}
+                            </span>
+                        `;
+                        
+                        // Actualizar estado
+                        const newEstadoClass = isWin ? 
+                            'bg-green-500/20 text-green-400 border border-green-500/30' : 
+                            'bg-red-500/20 text-red-400 border border-red-500/30';
+                        
+                        estadoCellSpan.className = `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${newEstadoClass}`;
+                        estadoCellSpan.textContent = isWin ? 'Ganada' : 'Perdida';
+                        
+                        // Agregar animación de actualización
+                        row.classList.add('animate-pulse');
+                        setTimeout(() => {
+                            row.classList.remove('animate-pulse');
+                        }, 1000);
+                        
+                        console.log('📝 Señal actualizada en el historial con resultado:', result);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Función para limpiar tabla del historial si hay demasiadas filas
+        function cleanupHistoryTable() {
+            const tbody = document.getElementById('signalsTableBody');
+            if (!tbody) return;
+            
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length > 50) {
+                // Remover filas excedentes (mantener solo las primeras 50)
+                const rowsToRemove = rows.length - 50;
+                for (let i = 0; i < rowsToRemove; i++) {
+                    if (tbody.lastChild) {
+                        tbody.removeChild(tbody.lastChild);
+                    }
+                }
+                console.log(`🧹 Limpieza del historial: ${rowsToRemove} filas removidas`);
+            }
+        }
+        
+        // Función para actualizar resultados del juego
+        function updateGameResults(results) {
+            const container = document.getElementById('gameResultsContainer');
+            if (!container) return;
+            
+            // Guardar resultados actuales para el resize
+            window.currentResults = results;
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/20 flex items-center justify-center mb-4 shadow-lg mx-auto">
+                            <i class="fas fa-plane text-white/40 text-2xl"></i>
+                        </div>
+                        <p class="text-white/50 text-sm font-medium">Esperando resultados...</p>
+                        <p class="text-white/30 text-xs mt-2">Los resultados se mostrarán aquí</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Si la vista está expandida, mantenerla expandida
+            if (isResultsExpanded) {
+                showAllResults(results, container);
+                return;
+            }
+            
+            // Detectar si es pantalla grande (lg+) o móvil
+            const isLargeScreen = window.innerWidth >= 1024; // lg breakpoint de Tailwind
+            
+            // En pantallas grandes mostrar todos, en móviles solo 20 (5 columnas x 4 filas)
+            const resultsToShow = isLargeScreen ? results : results.slice(0, 20);
+            const hasMoreResults = !isLargeScreen && results.length > 20;
+            
+            // Crear lista horizontal de resultados centrada en pantallas grandes
+            let html = `<div class="flex flex-wrap gap-1.5 sm:gap-2 p-2 sm:p-3 ${isLargeScreen ? 'justify-center' : ''}">`;
+            
+            resultsToShow.forEach((result, index) => {
+                const multiplier = result.resultado || result.multiplier;
+                let backgroundColor, textColor;
+                
+                // Aplicar colores según el rango del multiplicador
+                if (multiplier < 2.00) {
+                    // Menores a 2.00: Azul
+                    backgroundColor = 'rgb(52, 180, 255)';
+                    textColor = 'white';
+                } else if (multiplier >= 2.00 && multiplier <= 10.00) {
+                    // Entre 2.00 y 10.00: Púrpura
+                    backgroundColor = 'rgb(145, 62, 248)';
+                    textColor = 'white';
+                } else {
+                    // Mayor a 10.00: Magenta
+                    backgroundColor = 'rgb(192, 23, 180)';
+                    textColor = 'white';
+                }
+                
+                const formattedResult = `${multiplier.toFixed(2)}x`;
+                const time = result.hora || result.time || '';
+                const cycleNumber = result.numero_ciclo || '';
+                
+                html += `
+                    <div class="result-item" style="
+                        background-color: ${backgroundColor}; 
+                        color: ${textColor}; 
+                        padding: 2px 6px; 
+                        border-radius: 8px; 
+                        font-weight: 500; 
+                        font-size: 12px;
+                        min-width: 55px;
+                        text-align: center;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                        transition: all 0.2s ease;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        margin: 1px;
+                    " title="Ciclo ${cycleNumber} - ${time} - ${formattedResult}">
+                        ${formattedResult}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Agregar botón "Ver más" solo en móviles si hay más resultados
+            if (hasMoreResults) {
+                html += `
+                    <div class="px-2 sm:px-3 pb-2 sm:pb-3">
+                        <button id="showMoreResultsBtn" class="w-full py-1.5 px-2 sm:px-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-500/30 hover:border-blue-500/50 rounded-lg text-blue-400 hover:text-blue-300 transition-all duration-300 flex items-center justify-center space-x-2 text-xs">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                            <span>Ver más (${results.length - 20})</span>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            
+            // Actualizar contador de resultados
+            updateResultsCounter(resultsToShow.length, results.length);
+            
+            // Agregar event listener para el botón "Ver más" solo en móviles
+            if (hasMoreResults) {
+                const showMoreBtn = document.getElementById('showMoreResultsBtn');
+                if (showMoreBtn) {
+                    showMoreBtn.addEventListener('click', () => {
+                        showAllResults(results, container);
+                    });
+                }
+            }
+            
+
+        }
+        
+                // Función para mostrar todos los resultados
+        function showAllResults(results, container) {
+            // Marcar como expandido
+            isResultsExpanded = true;
+            
+            // Detectar si es pantalla grande para centrar
+            const isLargeScreen = window.innerWidth >= 1024;
+            
+            // Crear lista horizontal de todos los resultados
+            let html = `<div class="flex flex-wrap gap-1.5 sm:gap-2 p-2 sm:p-3 max-h-96 overflow-y-auto custom-scrollbar ${isLargeScreen ? 'justify-center' : ''}">`;
+            
+            results.forEach((result, index) => {
+                const multiplier = result.resultado || result.multiplier;
+                let backgroundColor, textColor;
+                
+                // Aplicar colores según el rango del multiplicador
+                if (multiplier < 2.00) {
+                    // Menores a 2.00: Azul
+                    backgroundColor = 'rgb(52, 180, 255)';
+                    textColor = 'white';
+                } else if (multiplier >= 2.00 && multiplier <= 10.00) {
+                    // Entre 2.00 y 10.00: Púrpura
+                    backgroundColor = 'rgb(145, 62, 248)';
+                    textColor = 'white';
+                } else {
+                    // Mayor a 10.00: Magenta
+                    backgroundColor = 'rgb(192, 23, 180)';
+                    textColor = 'white';
+                }
+                
+                const formattedResult = `${multiplier.toFixed(2)}x`;
+                const time = result.hora || result.time || '';
+                const cycleNumber = result.numero_ciclo || '';
+                
+                html += `
+                    <div class="result-item" style="
+                        background-color: ${backgroundColor}; 
+                        color: ${textColor}; 
+                        padding: 2px 6px; 
+                        border-radius: 8px; 
+                        font-weight: 500; 
+                        font-size: 12px;
+                        min-width: 55px;
+                        text-align: center;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                        transition: all 0.2s ease;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        margin: 1px;
+                    " title="Ciclo ${cycleNumber} - ${time} - ${formattedResult}">
+                        ${formattedResult}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Agregar botón "Ver menos" para contraer
+            html += `
+                <div class="px-2 sm:px-3 pb-2 sm:pb-3">
+                                            <button id="showLessResultsBtn" class="w-full py-1.5 px-2 sm:px-3 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-500/30 hover:border-purple-500/50 rounded-lg text-purple-400 hover:text-purple-300 transition-all duration-300 flex items-center justify-center space-x-2 text-xs">
+                        <i class="fas fa-chevron-up text-xs"></i>
+                        <span>Ver menos</span>
+                        </button>
+                    </div>
+                `;
+            
+            container.innerHTML = html;
+            
+            // Actualizar contador de resultados
+            updateResultsCounter(results.length, results.length);
+            
+            // Agregar event listener para el botón "Ver menos"
+            const showLessBtn = document.getElementById('showLessResultsBtn');
+            if (showLessBtn) {
+                showLessBtn.addEventListener('click', () => {
+                    // Marcar como no expandido y volver a mostrar solo los primeros 20
+                    isResultsExpanded = false;
+                    updateGameResults(results);
+                });
+            }
+        }
+        
+        // Función para actualizar el contador de resultados
+        function updateResultsCounter(showing, total) {
+            const counter = document.getElementById('resultsCounter');
+            if (counter) {
+                if (showing === total) {
+                    counter.textContent = `Mostrando todos (${total})`;
+                    counter.className = 'text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded-full';
+                } else {
+                    counter.textContent = `${showing} de ${total}`;
+                    counter.className = 'text-xs text-white/60 bg-white/10 px-2 py-1 rounded-full';
+                }
+            }
+        }
+        
+        // Función para detectar cambio de tamaño de pantalla y actualizar resultados
+        function handleResize() {
+            // Si hay resultados actuales, actualizarlos para adaptarse al nuevo tamaño
+            if (window.currentResults && window.currentResults.length > 0) {
+                updateGameResults(window.currentResults);
+            }
+        }
+        
+        // Función para actualizar historial del juego
+        function updateGameHistory(results) {
+            // Esta función se puede usar para mostrar más resultados históricos
+            console.log('📚 Historial del juego actualizado:', results.length, 'resultados');
+        }
+        
+        // Función para actualizar historial de señales (carga inicial)
+        function updateSignalsHistory(signals) {
+            const tbody = document.getElementById('signalsTableBody');
+            if (!tbody) return;
+            
+            // Limpiar tabla existente
+            tbody.innerHTML = '';
+            
+            // Mostrar solo las primeras 50 señales para mantener performance
+            const señalesAMostrar = signals.slice(0, 50);
+            
+            señalesAMostrar.forEach((senal, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-white/5 transition-colors duration-300';
+                
+                const tipoIcon = getSignalTypeIcon(senal.tipo);
+                const estadoClass = getEstadoClass(senal.estado);
+                const galeText = senal.gale_numero > 0 ? `GALE ${senal.gale_numero}` : '-';
+                
+                // Formatear resultado con 2 dígitos decimales y "x" si es un número
+                let formattedResult = senal.resultado;
+                if (senal.resultado && !isNaN(parseFloat(senal.resultado))) {
+                    const multiplier = parseFloat(senal.resultado);
+                    formattedResult = `${multiplier.toFixed(2)}x`;
+                }
+                
+                // Determinar colores del resultado basado en el estado
+                let resultBgColor = 'bg-white/10';
+                let resultTextColor = 'text-white/70';
+                let resultBorderColor = 'border-white/20';
+                
+                if (senal.estado === 'ganada' || senal.estado === 'ganada_gale') {
+                    resultBgColor = 'bg-green-500/20';
+                    resultTextColor = 'text-green-400';
+                    resultBorderColor = 'border-green-500/30';
+                } else if (senal.estado === 'perdida') {
+                    resultBgColor = 'bg-red-500/20';
+                    resultTextColor = 'text-red-400';
+                    resultBorderColor = 'border-red-500/30';
+                }
+                
+                // Nuevo orden: Tipo, Estado, Resultado, Hora, Gale, Timestamp
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/20 text-white/90 border border-white/20">
+                            <span class="mr-1.5">${tipoIcon}</span>
+                            ${senal.tipo}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${estadoClass}">
+                            ${senal.estado}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${resultBgColor} ${resultTextColor} border ${resultBorderColor}" style="padding: 2px 6px;">
+                            ${formattedResult}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${senal.hora}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${galeText}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-xs text-white/60">${formatTimestamp(senal.timestamp)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Mostrar indicador si hay más señales
+            if (signals.length > 50) {
+                const infoRow = document.createElement('tr');
+                infoRow.className = 'bg-white/5';
+                infoRow.innerHTML = `
+                    <td colspan="6" class="px-4 py-3 text-center text-sm text-white/60">
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="w-2 h-2 bg-red-400/60 rounded-full animate-pulse"></div>
+                            <span>Mostrando 50 de ${signals.length} señales. Usa el scroll para ver más.</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(infoRow);
+            }
+            
+            console.log('📚 Historial inicial cargado:', signals.length, 'señales');
+        }
+        
+
+        
+        // Función para mostrar reinicio diario
+        function showDailyReset(message) {
+            // Mostrar notificación de reinicio
+            showNotification(message, 'info');
+            
+            // Resetear contadores
+            if (ganadasElement) ganadasElement.textContent = '0';
+            if (perdidasElement) perdidasElement.textContent = '0';
+            if (precisionElement) precisionElement.textContent = '0.00%';
+            if (maxHateElement) maxHateElement.textContent = '0';
+        }
+        
+
+        
+        // Función para actualizar estadísticas
+        function updateStats(stats) {
+            if (ganadasElement) ganadasElement.textContent = stats.ganadas || 0;
+            if (perdidasElement) perdidasElement.textContent = stats.perdidas || 0;
+            if (precisionElement) precisionElement.textContent = stats.win_rate || '0.00%';
+            if (maxHateElement) maxHateElement.textContent = stats.max_hate || 0;
+        }
+        
+        // Función para actualizar estadísticas del sidebar
+        function updateSidebarStats(configuration) {
+            if (!configuration) return;
+            
+            const sidebarSignals = document.getElementById('sidebarSignals');
+            const sidebarPrecision = document.getElementById('sidebarPrecision');
+            const sidebarGanancia = document.getElementById('sidebarGanancia');
+            
+            if (sidebarSignals) {
+                const total = (configuration.stats?.ganadas || 0) + (configuration.stats?.perdidas || 0);
+                sidebarSignals.textContent = total;
+            }
+            
+            if (sidebarPrecision) {
+                sidebarPrecision.textContent = configuration.win_rate || '0%';
+            }
+            
+            if (sidebarGanancia) {
+                const balance = (configuration.stats?.ganadas || 0) - (configuration.stats?.perdidas || 0);
+                sidebarGanancia.textContent = `$${balance}`;
+                sidebarGanancia.className = balance >= 0 ? 'text-sm font-semibold text-green-400' : 'text-sm font-semibold text-red-400';
+            }
+        }
+        
+        // Función para verificar el estado actual del sistema
+        function checkSystemStatus() {
+            // Esta función se puede usar para verificar el estado del sistema en cualquier momento
+            console.log('🔍 Verificando estado del sistema...');
+            
+            // Si no hay conexión WebSocket, no hacer nada
+            if (!isConnected) {
+                console.log('❌ No hay conexión WebSocket activa');
+                return;
+            }
+            
+            // Si hay conexión pero no hay datos de estado, limpiar mensajes
+            if (!window.currentSystemStatus) {
+                console.log('📊 No hay datos de estado del sistema - Limpiando mensajes');
+                clearActiveMessages();
+                return;
+            }
+            
+            // Verificar si todos los estados están inactivos
+            const status = window.currentSystemStatus;
+            const isAllInactive = !status.signal_active && !status.signal_gale_active && !status.gale_pending && status.waiting_result === 0;
+            
+            if (isAllInactive) {
+                console.log('📱 Sistema en estado inactivo - Limpiando mensajes activos');
+                clearActiveMessages();
+            } else {
+                console.log('📊 Sistema tiene actividad - Manteniendo mensajes activos');
+            }
+        }
+        
+        // Función para actualizar estado de conexión
+        function updateConnectionStatus(connected) {
+            // Actualizar indicador principal de conexión
+            const connectionStatus = document.getElementById('connectionStatus');
+            if (connectionStatus) {
+                if (connected) {
+                    connectionStatus.className = 'flex items-center space-x-2 px-3 py-1.5 bg-green-500/20 rounded-full border border-green-500/30';
+                    connectionStatus.innerHTML = `
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-green-400 font-medium">Conectado</span>
+                    `;
+                } else {
+                    connectionStatus.className = 'flex items-center space-x-2 px-3 py-1.5 bg-red-500/20 rounded-full border border-red-500/30';
+                    connectionStatus.innerHTML = `
+                        <div class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-red-400 font-medium">Desconectado</span>
+                    `;
+                }
+            }
+            
+            // Actualizar indicador del navbar
+            const navbarStatus = document.getElementById('navbarConnectionStatus');
+            if (navbarStatus) {
+                if (connected) {
+                    navbarStatus.className = 'flex items-center space-x-2 px-2 py-1 bg-green-500/20 rounded-full border border-green-500/30';
+                    navbarStatus.innerHTML = `
+                        <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-green-400 font-medium hidden sm:block">Conectado</span>
+                    `;
+                } else {
+                    navbarStatus.className = 'flex items-center space-x-2 px-2 py-1 bg-red-500/20 rounded-full border border-red-500/30';
+                    navbarStatus.innerHTML = `
+                        <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-red-400 font-medium hidden sm:block">Desconectado</span>
+                    `;
+                }
+            }
+            
+            // También actualizar el indicador del sidebar
+            const sidebarStatus = document.querySelector('#sidebar .w-1\\.5.h-1\\.5.bg-green-400');
+            if (sidebarStatus) {
+                sidebarStatus.className = connected ? 'w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse' : 'w-1.5 h-1.5 bg-red-400 rounded-full';
+            }
+        }
+        
+        // Funciones auxiliares
+        function getSignalTypeIcon(tipo) {
+            // Iconos SVG de Font Awesome para mejor calidad visual y consistencia
+            const icons = {
+                'senal': '<i class="fas fa-plane text-red-400 text-xs"></i>',
+                'resultado': '<i class="fas fa-chart-bar text-blue-400 text-xs"></i>',
+                'prediccion': '<i class="fas fa-clock text-yellow-400 text-xs"></i>',
+                'gale': '<i class="fas fa-redo text-purple-400 text-xs"></i>'
+            };
+            return icons[tipo] || '<i class="fas fa-chart-bar text-blue-400 text-xs"></i>';
+        }
+        
+        function getEstadoClass(estado) {
+            const classes = {
+                'activada': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+                'ganada': 'bg-green-500/20 text-green-400 border border-green-500/30',
+                'ganada_gale': 'bg-green-500/20 text-green-400 border border-green-500/30',
+                'perdida': 'bg-red-500/20 text-red-400 border border-red-500/30'
+            };
+            return classes[estado] || 'bg-white/20 text-white/90 border border-white/20';
+        }
+        
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            try {
+                const date = new Date(timestamp);
+                // Solo mostrar hora en formato local (HH:MM:SS)
+                return date.toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false // Formato 24 horas
+                });
+            } catch (error) {
+                return timestamp;
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Crear notificación temporal
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg border transition-all duration-300 transform translate-x-full`;
+            
+            let bgColor = 'bg-blue-500/20 border-blue-500/30 text-blue-400';
+            if (type === 'success') bgColor = 'bg-green-500/20 border-green-500/30 text-green-400';
+            else if (type === 'error') bgColor = 'bg-red-500/20 border-red-500/30 text-red-400';
+            else if (type === 'warning') bgColor = 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400';
+            
+            notification.className += ` ${bgColor}`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-info-circle text-sm"></i>
+                    <span class="text-sm font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animar entrada
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+
+        
+        // Funcionalidad del dropdown del usuario
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        // Función para mostrar/ocultar dropdown
+        function toggleUserDropdown() {
+            if (userDropdown) {
+                const isVisible = userDropdown.classList.contains('opacity-100');
+                
+                if (isVisible) {
+                    // Ocultar dropdown
+                    userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                    userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                } else {
+                    // Mostrar dropdown
+                    userDropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                    userDropdown.classList.add('opacity-100', 'visible', 'scale-100');
+                }
+            }
+        }
+        
+        // Event listener para el botón del usuario
+        if (userMenuBtn) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleUserDropdown();
+            });
+        }
+        
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (userDropdown && !userDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            }
+        });
+        
+        // Cerrar dropdown con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && userDropdown) {
+                userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            }
+        });
+        
+        // Función para logout
+        function logout() {
+            console.log('🚪 Cerrando sesión...');
+            if (confirm('¿Estás seguro de que quieres salir?')) {
+                alert('Sesión cerrada exitosamente');
+            }
+        }
+        
+        // Conectar al WebSocket cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando conexión WebSocket...');
+            console.log('🌐 Conectando a: wss://statszones.com:7777/');
+            console.log('📡 Bot de Aviator Signals');
+            connectWebSocket();
+        });
+        
+        // Reconectar si se pierde la conexión
+        window.addEventListener('focus', function() {
+            if (!isConnected && reconnectAttempts < maxReconnectAttempts) {
+                console.log('🔄 Intentando reconectar al enfocar la ventana...');
+                connectWebSocket();
+            }
+        });
+        
+        // Listener para cambio de tamaño de pantalla
+        window.addEventListener('resize', handleResize);
+    </script>
+</body>
+</html>

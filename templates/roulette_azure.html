@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Signals</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para el sidebar */
+        #sidebar {
+            transform: translateX(0) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        
+        /* Layout principal optimizado para desktop */
+        main {
+            margin-left: 16rem; /* 256px = 16rem */
+            transition: margin-left 0.3s ease;
+            width: auto; /* Dejar que se ajuste naturalmente */
+            overflow-x: hidden; /* Prevenir scroll horizontal */
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%) !important;
+                z-index: 9999 !important;
+            }
+            
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            /* Botón de toggle siempre visible en móvil */
+            #mobileToggleBtn {
+                display: block !important;
+                z-index: 10000 !important;
+            }
+        }
+        
+        /* Desktop: sidebar siempre visible y main pegado */
+        @media (min-width: 1024px) {
+            #sidebar {
+                transform: translateX(0) !important;
+                z-index: 40 !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 4rem !important; /* 64px para el navbar */
+                height: calc(100vh - 4rem) !important;
+                width: 16rem !important; /* 256px */
+            }
+            
+            main {
+                margin-left: 16rem !important; /* Exactamente el ancho del sidebar */
+                width: auto !important; /* Se ajusta naturalmente */
+                min-height: calc(100vh - 4rem) !important;
+                overflow-x: hidden !important; /* Prevenir scroll horizontal */
+            }
+            
+            #mobileToggleBtn {
+                display: none !important;
+            }
+        }
+        
+        /* Scrollbar personalizado */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Estilos específicos para la tabla con scroll */
+        .table-scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Hacer las filas de la tabla más compactas */
+        .compact-table td {
+            padding: 0.5rem 1rem;
+        }
+        
+        .compact-table th {
+            padding: 0.75rem 1rem;
+        }
+        
+        /* Animación suave para el scroll */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        /* Indicador de scroll más visible */
+        .scroll-indicator {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Forzar visibilidad del sidebar en todos los casos */
+        #sidebar.show-mobile {
+            transform: translateX(0) !important;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* Asegurar que el contenido principal no se superponga */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Optimización para pantallas muy grandes */
+        @media (min-width: 1440px) {
+            main {
+                margin-left: 16rem !important;
+                width: auto !important;
+            }
+        }
+        
+        /* Prevenir scroll horizontal global */
+        body {
+            overflow-x: hidden;
+        }
+        
+        html {
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sans antialiased">
+    <!-- Navbar Ultra-Minimalista con Botón de Menú -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/5">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo y Título -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-white/10 flex items-center justify-center">
+                        <i class="fas fa-dice text-blue-400 text-sm"></i>
+                    </div>
+                    <h1 class="text-lg font-light text-white/90 tracking-wide hidden sm:block">Roulette</h1>
+                </div>
+
+                <!-- Botón de Menú Móvil (Siempre Visible) -->
+                <button id="mobileMenuBtn" class="lg:hidden w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                    <i class="fas fa-bars text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                </button>
+
+                <!-- Acciones Desktop -->
+                <div class="hidden lg:flex items-center space-x-2">
+                    <button class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                        <i class="fas fa-bell text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                    </button>
+                    
+                    <div class="relative">
+                        <button id="userMenuBtn" class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-200 cursor-pointer group">
+                            <span class="text-white/60 text-sm font-medium group-hover:text-white/80 transition-colors duration-200">U</span>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="absolute right-0 top-12 w-40 bg-black/90 backdrop-blur-md border border-white/5 rounded-lg shadow-lg opacity-0 invisible scale-95 transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="/user-dashboard" class="flex items-center px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-150 group">
+                                    <i class="fas fa-chart-line text-white/50 text-xs mr-3 group-hover:text-blue-400 transition-colors duration-150"></i>
+                                    <span class="text-sm">Dashboard</span>
+                                </a>
+                                <div class="border-t border-white/5 my-1"></div>
+                                <button onclick="logout()" class="w-full flex items-center px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-150 group">
+                                    <i class="fas fa-sign-out-alt text-white/50 text-xs mr-3 group-hover:text-red-400 transition-colors duration-150"></i>
+                                    <span class="text-sm">Salir</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Profesional Ultra-Avanzado -->
+    <aside id="sidebar" class="fixed left-0 top-16 h-full w-64 bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-3xl border-r border-white/10 z-40 transition-all duration-300 shadow-2xl">
+        <div class="h-full flex flex-col">
+            <!-- Header del Sidebar -->
+            <div class="p-6 border-b border-white/5">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-xl border border-white/20 flex items-center justify-center">
+                        <i class="fas fa-dice text-blue-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white/90 font-semibold text-base">Roulette Pro</h2>
+                        <p class="text-white/40 text-xs">Sistema Avanzado</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación Principal -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="p-4 space-y-2">
+                    <!-- Sección Principal -->
+                    <div class="mb-4">
+                        <h3 class="text-xs font-medium text-white/40 uppercase tracking-widest mb-2 px-3">Principal</h3>
+                        <nav class="space-y-1">
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-blue-400 bg-gradient-to-r from-blue-500/15 to-blue-500/5 rounded-xl border border-blue-500/20 font-medium transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-sm"></i>
+                                    </div>
+                                    <span class="text-sm">Dashboard</span>
+                                </div>
+                                <div class="w-2 h-2 bg-blue-400 rounded-full opacity-80"></div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-signal text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Señales Live</span>
+                                </div>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-chart-bar text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Análisis IA</span>
+                                </div>
+                                <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/30">PRO</span>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-history text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Historial</span>
+                                </div>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Sección Herramientas -->
+                    <div class="mb-4">
+                        <h3 class="text-xs font-medium text-white/40 uppercase tracking-widest mb-2 px-3">Herramientas</h3>
+                        <nav class="space-y-1">
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-calculator text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Calculadora</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-chart-pie text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Estadísticas</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="group flex items-center justify-between px-4 py-3 text-white/60 hover:text-white/80 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-cog text-sm group-hover:scale-110 transition-transform"></i>
+                                    </div>
+                                    <span class="text-sm">Configuración</span>
+                                </div>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Estadísticas en Tiempo Real -->
+                    <div class="bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl border border-white/10 p-4 backdrop-blur-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-white/90">Rendimiento Hoy</h3>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-400">Live</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                    <span class="text-xs text-white/60">Señales</span>
+                                </div>
+                                <span class="text-sm font-semibold text-blue-400">24</span>
+                            </div>
+                            
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                    <span class="text-xs text-white/60">Ganancia</span>
+                                </div>
+                                <span class="text-sm font-semibold text-yellow-400">+$247</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Mini gráfico de progreso -->
+                        <div class="mt-3 pt-2 border-t border-white/5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-white/40">Progreso del día</span>
+                                <span class="text-xs text-white/60">90%</span>
+                            </div>
+                            <div class="w-full bg-white/10 rounded-full h-1.5">
+                                <div class="bg-gradient-to-r from-blue-400 to-green-400 h-1.5 rounded-full transition-all duration-500" style="width: 87%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado del Sistema -->
+                    <div class="bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-xl border border-green-500/20 p-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-green-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-green-400">Sistema Activo</p>
+                                <p class="text-xs text-green-400/60">Monitoreo 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer del Sidebar -->
+            <div class="p-4 border-t border-white/5">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-lg flex items-center justify-center">
+                        <span class="text-white/80 text-sm font-medium">U</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-white/90">Usuario Pro</p>
+                        <p class="text-xs text-white/40">Plan Premium</p>
+                    </div>
+                    <button class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group">
+                        <i class="fas fa-ellipsis-v text-white/60 group-hover:text-white/80 text-sm transition-colors"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay para móviles con blur mejorado -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-30 lg:hidden opacity-0 pointer-events-none transition-all duration-300"></div>
+
+
+
+    <!-- Contenido Principal -->
+    <main class="pt-16 min-h-screen transition-all duration-300">
+        <div class="p-2 lg:p-2 content-wrapper">
+            <!-- Métricas Ultra-Minimalistas - 2 Columnas en Móvil -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4">
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Total</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="totalSignals">1,247</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-blue-500/20 rounded-lg border border-blue-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-green-400 flex items-center font-medium">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            12%
+                        </span>
+                        <span class="text-white/30 ml-2 hidden lg:block">3 horas atras</span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Precisión</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="precision">87.3%</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-green-500/20 rounded-lg border border-green-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-green-400 flex items-center font-medium">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            5.2%
+                        </span>
+                        <span class="text-white/30 ml-2 hidden lg:block">3 horas atras
+                        </span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Ganancia</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="ganancia">$2,847</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-yellow-500/20 rounded-lg border border-yellow-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-green-400 flex items-center font-medium">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            18.7%
+                        </span>
+                        <span class="text-white/30 ml-2 hidden lg:block">3 horas atras</span>
+                    </div>
+                </div>
+
+                <div class="group p-3 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-white/40 mb-1">Activas</p>
+                            <p class="text-xl lg:text-2xl font-light text-white/90" id="activas">8</p>
+                        </div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-purple-500/20 rounded-lg border border-purple-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-4 h-4 lg:w-5 lg:h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <span class="text-blue-400 flex items-center font-medium">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="hidden lg:inline">En tiempo real</span>
+                            <span class="lg:hidden">Live</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico y Señales Recientes - Stack en Móvil -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-4">
+                <!-- Contenedor de Señales Activas -->
+                <div class="p-4 lg:p-5 bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl lg:rounded-2xl border border-white/10 backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-xl border border-blue-500/40 flex items-center justify-center shadow-lg">
+                                <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-white/90 tracking-wide">Señales</h3>
+                                <p class="text-xs text-white/50">Monitoreo en tiempo real</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-2 px-3 py-1.5 bg-green-500/20 rounded-full border border-green-500/30">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-400 font-medium">Live</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenedor de señales activas -->
+                    <div id="activeSignalsContainer" class="min-h-[12rem] lg:min-h-[14rem] space-y-3">
+                        <!-- Estado inicial -->
+                        <div id="noActiveSignals" class="h-full flex items-center justify-center py-8">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/20 flex items-center justify-center mb-4 shadow-lg mx-auto">
+                                    <svg class="w-8 h-8 text-white/40" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <p class="text-white/50 text-sm font-medium">Esperando señales...</p>
+                                <p class="text-white/30 text-xs mt-2">El bot analiza en tiempo real</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Las señales activas se insertarán aquí dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Señales Recientes Ultra-Minimalistas -->
+                <div class="p-4 lg:p-5 bg-white/5 rounded-lg lg:rounded-xl border border-white/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-medium text-white/90">Recientes</h3>
+                        <a href="#" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Ver todas</a>
+                    </div>
+                                            <div class="space-y-2">
+                        <div class="group p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    <div>
+                                        <p class="text-sm font-medium text-white/90">Rojo</p>
+                                        <p class="text-xs text-white/40">Hace 2 min</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-green-400">+$25</span>
+                            </div>
+                        </div>
+                        
+                        <div class="group p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                                    <div>
+                                        <p class="text-sm font-medium text-white/90">Negro</p>
+                                        <p class="text-xs text-white/40">Hace 5 min</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-red-400">-$10</span>
+                            </div>
+                        </div>
+                        
+                        <div class="group p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    <div>
+                                        <p class="text-sm font-medium text-white/90">Verde</p>
+                                        <p class="text-xs text-white/40">Hace 8 min</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-green-400">+$50</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla Ultra-Minimalista con Scroll Interno -->
+            <div class="bg-white/5 rounded-lg lg:rounded-xl border border-white/10 overflow-hidden">
+                <div class="px-4 lg:px-5 py-3 border-b border-white/10">
+                    <h3 class="text-lg font-medium text-white/90">Todas las Señales</h3>
+                </div>
+                
+                <!-- Contenedor de la tabla con scroll interno -->
+                <div class="relative">
+                    <!-- Tabla con altura fija y scroll interno -->
+                    <div class="overflow-hidden">
+                        <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                            <table class="w-full">
+                                <thead class="bg-white/5 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Tipo</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Resultado</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Apuesta</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Ganancia</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Fecha</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider bg-white/5 backdrop-blur-sm">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5" id="signalsTableBody">
+                                    <!-- Las filas se generarán dinámicamente desde JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicador de scroll -->
+                    <div class="absolute bottom-2 right-2 flex items-center space-x-2 text-xs text-white/40">
+                        <div class="w-2 h-2 bg-blue-400/60 rounded-full animate-pulse"></div>
+                        <span>Scroll para ver más señales</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Elementos del DOM
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const main = document.querySelector('main');
+
+        // Función para mostrar/ocultar sidebar en móviles
+        function toggleSidebar() {
+            if (window.innerWidth < 1024) {
+                const isOpen = sidebar.classList.contains('show-mobile');
+                
+                if (isOpen) {
+                    // Cerrar sidebar
+                    sidebar.classList.remove('show-mobile');
+                    mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    // Abrir sidebar
+                    sidebar.classList.add('show-mobile');
+                    mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            }
+        }
+
+        // Event listeners
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('show-mobile');
+                    mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+        }
+
+        // Cerrar sidebar con tecla Escape en móviles
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && window.innerWidth < 1024) {
+                sidebar.classList.remove('show-mobile');
+                mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                statusDot.className = 'w-2 h-2 bg-red-400 rounded-full';
+                statusText.textContent = 'Sidebar: Oculto';
+            }
+        });
+
+        // Gestos táctiles para móviles
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (window.innerWidth >= 1024) return; // Solo en móviles
+            
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe izquierda - cerrar sidebar
+                    if (sidebar.classList.contains('show-mobile')) {
+                        sidebar.classList.remove('show-mobile');
+                        mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                } else if (diff < 0) {
+                    // Swipe derecha - abrir sidebar
+                    if (!sidebar.classList.contains('show-mobile')) {
+                        sidebar.classList.add('show-mobile');
+                        mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                    }
+                }
+            }
+        }
+
+        // Asegurar que el sidebar esté visible en desktop
+        function ensureSidebarVisibility() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('show-mobile');
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.style.transform = 'translateX(0)';
+                sidebar.style.visibility = 'visible';
+                sidebar.style.opacity = '1';
+                sidebar.style.display = 'block';
+                
+                // Asegurar que el main esté correctamente posicionado
+                main.style.marginLeft = '16rem';
+                main.style.width = 'auto';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('show-mobile');
+                main.style.marginLeft = '0';
+                main.style.width = '100%';
+            }
+        }
+
+        // Ejecutar al cargar y en resize
+        window.addEventListener('resize', ensureSidebarVisibility);
+        document.addEventListener('DOMContentLoaded', ensureSidebarVisibility);
+        
+        // Ejecutar inmediatamente
+        setTimeout(ensureSidebarVisibility, 100);
+        setTimeout(ensureSidebarVisibility, 500);
+        
+        // Función adicional para optimizar el layout en desktop
+        function optimizeDesktopLayout() {
+            if (window.innerWidth >= 1024) {
+                // Asegurar que el sidebar esté fijo y visible
+                sidebar.style.position = 'fixed';
+                sidebar.style.left = '0';
+                sidebar.style.top = '4rem';
+                sidebar.style.height = 'calc(100vh - 4rem)';
+                sidebar.style.width = '16rem';
+                
+                // Asegurar que el main esté perfectamente alineado
+                main.style.marginLeft = '16rem';
+                main.style.width = 'auto';
+                main.style.minHeight = 'calc(100vh - 4rem)';
+                
+                console.log('✅ Layout de desktop optimizado');
+            }
+        }
+        
+        // Ejecutar optimización de layout
+        window.addEventListener('load', optimizeDesktopLayout);
+        setTimeout(optimizeDesktopLayout, 1000);
+
+
+
+        // ========================================
+        // SISTEMA WEBSOCKET PARA DATOS EN TIEMPO REAL
+        // ========================================
+        
+        let ws = null;
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        
+        // Elementos del DOM para actualizar
+        const totalSignalsElement = document.querySelector('.group:nth-child(1) .text-xl');
+        const precisionElement = document.querySelector('.group:nth-child(2) .text-xl');
+        const gananciaElement = document.querySelector('.group:nth-child(3) .text-xl');
+        const activasElement = document.querySelector('.group:nth-child(4) .text-xl');
+        
+        // Función para conectar al WebSocket
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('wss://statszones.com:8866/');
+                
+                ws.onopen = function() {
+                    console.log('✅ Conectado al WebSocket de Roulette Signals');
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    updateConnectionStatus(true);
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        processWebSocketMessage(data);
+                    } catch (error) {
+                        console.log('📨 Mensaje de texto recibido:', event.data);
+                        processTextMessage(event.data);
+                    }
+                };
+                
+                ws.onclose = function() {
+                    console.log('❌ Conexión WebSocket cerrada');
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    
+                    // Intentar reconectar
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        console.log(`🔄 Intentando reconectar... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                        setTimeout(connectWebSocket, 3000);
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('❌ Error en WebSocket:', error);
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                };
+                
+            } catch (error) {
+                console.error('❌ Error al conectar WebSocket:', error);
+            }
+        }
+        
+        // Función para procesar mensajes JSON del WebSocket
+        function processWebSocketMessage(data) {
+            console.log('📊 Datos JSON recibidos:', data);
+            console.log('📊 Tipo de mensaje:', data.type);
+            
+            switch(data.type) {
+                case 'datos_financieros':
+                    console.log('💰 Procesando datos financieros:', data.estadisticas);
+                    updateFinancialData(data.estadisticas);
+                    break;
+                    
+                case 'historial_profesional':
+                    console.log('📊 Procesando historial profesional:', data.historial);
+                    console.log('📊 Estadísticas del historial:', data.estadisticas);
+                    updateProfessionalHistory(data.historial, data.estadisticas);
+                    break;
+                    
+                case 'ultimos_100':
+                    console.log('🎲 Procesando últimos 100 resultados:', data.ultimos_100);
+                    updateLastResults(data.ultimos_100);
+                    break;
+                    
+                case 'ultimos_5':
+                    console.log('🎲 Procesando últimos 5 resultados:', data.ultimos_5);
+                    updateLast5Results(data.ultimos_5);
+                    break;
+                    
+                case 'resumen_financiero':
+                    console.log('💰 Procesando resumen financiero:', data.estadisticas);
+                    updateFinancialSummary(data.estadisticas);
+                    break;
+                    
+                case 'resumen_historial_profesional':
+                    console.log('📊 Procesando resumen del historial:', data.estadisticas);
+                    updateHistorySummary(data.estadisticas);
+                    break;
+                    
+                default:
+                    console.log('📨 Tipo de mensaje no reconocido:', data.type);
+            }
+        }
+        
+        // Función para procesar mensajes de texto (señales directas)
+        function processTextMessage(message) {
+            console.log('📨 Mensaje de texto recibido:', message);
+            
+            // Procesar señales activas (BET y GALE)
+            if (message.includes('BET SIGNAL') || message.includes('GALE SIGNAL')) {
+                console.log('🎯 Señal activa detectada:', message);
+                processActiveSignal(message);
+                addSignalToHistory(message);
+            }
+            // Procesar señales de resultado (WIN, LOSS, TIE)
+            else if (message.includes('WIN SIGNAL') || message.includes('LOSS SIGNAL') || 
+                     message.includes('TIE SIGNAL')) {
+                console.log('🎯 Señal de resultado detectada:', message);
+                processResultSignal(message);
+                addSignalToHistory(message);
+            }
+            // Procesar mensajes de apuesta detallados
+            else if (message.includes('APUESTA SEÑAL') || message.includes('GALE SEÑAL')) {
+                console.log('📊 Detalle de apuesta recibido:', message);
+                processBetDetails(message);
+            }
+            // Procesar mensajes de espera
+            else if (message.includes('WAIT SIGNAL') || message.includes('Esperando próxima entrada')) {
+                console.log('⏳ Señal de espera detectada:', message);
+                processWaitSignal(message);
+            }
+            else {
+                console.log('📨 Mensaje de texto no reconocido como señal');
+            }
+        }
+        
+        // ========================================
+        // FUNCIONES PARA PROCESAR SEÑALES ACTIVAS
+        // ========================================
+        
+        // Función para procesar señales activas (BET y GALE)
+        function processActiveSignal(message) {
+            const container = document.getElementById('activeSignalsContainer');
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            
+            if (!container) return;
+            
+            // Ocultar mensaje de "no hay señales"
+            if (noSignalsDiv) {
+                noSignalsDiv.style.display = 'none';
+            }
+            
+            // Limpiar mensaje de espera existente
+            const existingWait = container.querySelector('#wait-signal');
+            if (existingWait) {
+                existingWait.remove();
+            }
+            
+            // Extraer información de la señal
+            let signalType = '';
+            let signalId = '';
+            
+            if (message.includes('BET SIGNAL')) {
+                signalType = 'BET';
+                const idMatch = message.match(/\[ID:([^\]]+)\]/);
+                signalId = idMatch ? idMatch[1] : 'N/A';
+            } else if (message.includes('GALE SIGNAL')) {
+                signalType = 'GALE';
+                const idMatch = message.match(/\[ID:([^\]]+)\]/);
+                signalId = idMatch ? idMatch[1] : 'N/A';
+            }
+            
+            // Crear elemento de señal activa
+            const signalElement = createActiveSignalElement(signalType, signalId, message);
+            
+            // Agregar al contenedor
+            container.appendChild(signalElement);
+            
+            // Actualizar contador de señales activas
+            updateActiveSignalsCount();
+        }
+        
+        // Función para procesar señales de resultado (WIN, LOSS, TIE)
+        function processResultSignal(message) {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            // Buscar señal activa por ID y marcarla como completada
+            const signalId = extractSignalId(message);
+            if (signalId) {
+                markSignalAsCompleted(signalId, message);
+            }
+            
+            // Actualizar contador de señales activas
+            updateActiveSignalsCount();
+        }
+        
+        // Función para procesar detalles de apuesta
+        function processBetDetails(message) {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            // Buscar señal activa por ID y actualizar detalles
+            const signalId = extractSignalId(message);
+            if (signalId) {
+                updateSignalDetails(signalId, message);
+            }
+        }
+        
+        // Función para procesar señales de espera
+        function processWaitSignal(message) {
+            const container = document.getElementById('activeSignalsContainer');
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            
+            if (!container) return;
+            
+            // Limpiar todas las señales activas existentes
+            const existingSignals = container.querySelectorAll('[id^="signal-"]');
+            existingSignals.forEach(signal => signal.remove());
+            
+            // Ocultar mensaje de "no hay señales"
+            if (noSignalsDiv) {
+                noSignalsDiv.style.display = 'none';
+            }
+            
+            // Crear mensaje de espera
+            const waitElement = createWaitElement();
+            
+            // Agregar al contenedor
+            container.appendChild(waitElement);
+            
+            // Actualizar contador de señales activas
+            updateActiveSignalsCount();
+        }
+        
+        // Función para crear elemento de espera
+        function createWaitElement() {
+            const div = document.createElement('div');
+            div.id = 'wait-signal';
+            div.className = 'mb-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/30 transition-all duration-300';
+            
+            div.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <span class="text-lg">⏳</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-yellow-400">Esperando entrada</div>
+                        <div class="text-xs text-white/60">El bot analiza en tiempo real</div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-yellow-400">Analizando</span>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Función para crear elemento de señal activa
+        function createActiveSignalElement(type, id, message) {
+            const div = document.createElement('div');
+            div.id = `signal-${id}`;
+            div.className = 'mb-3 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20 hover:border-blue-500/30 transition-all duration-300';
+            
+            const isGale = type === 'GALE';
+            const icon = isGale ? getGaleIconSVG() : getBetIconSVG();
+            const color = isGale ? 'text-purple-400' : 'text-blue-400';
+            const bgColor = isGale ? 'bg-purple-500/20' : 'bg-blue-500/20';
+            
+            div.innerHTML = `
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="w-8 h-8 ${bgColor} rounded-lg flex items-center justify-center">
+                            ${icon}
+                        </div>
+                        <div class="flex-1 text-center">
+                            ${type === 'GALE' ? `
+                                <div class="flex items-center justify-center space-x-2 mb-2">
+                                    <span class="text-sm font-medium text-purple-400">Apostar Gale</span>
+                                </div>
+                            ` : `
+                            <div class="flex items-center justify-center space-x-2 mb-1">
+                                <span class="text-sm font-medium ${color}">Apostar Entrada</span>
+                            </div>
+                            `}
+                            <div class="space-y-1" id="details-${id}">
+                                <div class="text-xs text-white/40">Esperando detalles de apuesta...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-green-400">Activa</span>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Función para obtener icono SVG elegante de BET
+        function getBetIconSVG() {
+            return `<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>`;
+        }
+        
+        // Función para obtener icono SVG elegante de GALE
+        function getGaleIconSVG() {
+            return `<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z"/>
+            </svg>`;
+        }
+        
+        // Función para extraer ID de señal del mensaje
+        function extractSignalId(message) {
+            const idMatch = message.match(/\[ID:([^\]]+)\]/);
+            return idMatch ? idMatch[1] : null;
+        }
+        
+        // Función para extraer número de gale del mensaje
+        function extractGaleNumber(message) {
+            const galeMatch = message.match(/GALE #(\d+)/);
+            return galeMatch ? galeMatch[1] : '?';
+        }
+        
+        // Función para marcar señal como completada
+        function markSignalAsCompleted(signalId, resultMessage) {
+            const signalElement = document.getElementById(`signal-${signalId}`);
+            if (!signalElement) return;
+            
+            if (resultMessage.includes('WIN')) {
+                // Para señales ganadas, mostrar solo "GANADA" con check
+                signalElement.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-center space-y-4 py-6">
+                        <!-- Icono de check grande -->
+                        <div class="w-20 h-20 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-3xl border border-green-500/30 flex items-center justify-center shadow-xl">
+                            <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Texto "GANADA" -->
+                        <div class="text-2xl font-bold text-green-400 tracking-wider">GANADA</div>
+                    </div>
+                `;
+            } else if (resultMessage.includes('LOSS')) {
+                // Para señales perdidas, mostrar solo "PERDIDA" con X
+                signalElement.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-center space-y-4 py-6">
+                        <!-- Icono de X grande -->
+                        <div class="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-3xl border border-red-500/30 flex items-center justify-center shadow-xl">
+                            <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Texto "PERDIDA" -->
+                        <div class="text-2xl font-bold text-red-400 tracking-wider">PERDIDA</div>
+                    </div>
+                `;
+            } else if (resultMessage.includes('TIE')) {
+                // Para empates, mostrar solo "EMPATE" con símbolo de empate
+                signalElement.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-center space-y-4 py-6">
+                        <!-- Icono de empate -->
+                        <div class="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-3xl border border-yellow-500/30 flex items-center justify-center shadow-xl">
+                            <svg class="w-12 h-12 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Texto "EMPATE" -->
+                        <div class="text-2xl font-bold text-yellow-400 tracking-wider">EMPATE</div>
+                    </div>
+                `;
+            }
+            
+            // Remover después de 5 segundos
+            setTimeout(() => {
+                if (signalElement && signalElement.parentNode) {
+                    signalElement.parentNode.removeChild(signalElement);
+                    updateActiveSignalsCount();
+                }
+            }, 5000);
+        }
+        
+        // Función para actualizar detalles de la señal
+        function updateSignalDetails(signalId, detailsMessage) {
+            const signalElement = document.getElementById(`signal-${signalId}`);
+            if (!signalElement) return;
+            
+            const detailsContainer = signalElement.querySelector(`#details-${signalId}`);
+            if (detailsContainer) {
+                // Extraer solo la información de las docenas
+                let displayText = '';
+                
+                if (detailsMessage.includes('Entrar en')) {
+                    // Extraer solo la parte de las docenas
+                    const docenasMatch = detailsMessage.match(/Entrar en ([^|]+)/);
+                    if (docenasMatch) {
+                        displayText = docenasMatch[1].trim();
+                    } else {
+                        displayText = 'Esperando detalles...';
+                    }
+                } else {
+                    displayText = detailsMessage;
+                }
+                
+                detailsContainer.innerHTML = `
+                    <div class="text-xs text-white/80 font-medium">${displayText}</div>
+                `;
+            }
+        }
+        
+        // Función para actualizar contador de señales activas
+        function updateActiveSignalsCount() {
+            const container = document.getElementById('activeSignalsContainer');
+            if (!container) return;
+            
+            const activeSignals = container.querySelectorAll('[id^="signal-"]');
+            const count = activeSignals.length;
+            
+            // Actualizar métrica de señales activas
+            if (activasElement) {
+                activasElement.textContent = count;
+            }
+            
+            // Mostrar mensaje si no hay señales activas
+            const noSignalsDiv = document.getElementById('noActiveSignals');
+            if (noSignalsDiv) {
+                if (count === 0) {
+                    noSignalsDiv.style.display = 'flex';
+                } else {
+                    noSignalsDiv.style.display = 'none';
+                }
+            }
+        }
+        
+        // Función para actualizar datos financieros
+        function updateFinancialData(stats) {
+            // Actualizar métricas principales
+            if (totalSignalsElement) {
+                totalSignalsElement.textContent = stats.total_apuestas || '0';
+            }
+            
+            if (precisionElement) {
+                precisionElement.textContent = `${stats.porcentaje_exito?.toFixed(1) || '0'}%`;
+            }
+            
+            if (gananciaElement) {
+                const balance = stats.balance_neto || 0;
+                gananciaElement.textContent = `$${balance.toFixed(2)}`;
+                gananciaElement.className = balance >= 0 ? 'text-xl lg:text-2xl font-light text-green-400' : 'text-xl lg:text-2xl font-light text-red-400';
+            }
+            
+            if (activasElement) {
+                activasElement.textContent = stats.gale_actual > 0 ? '1' : '0';
+            }
+            
+            // Actualizar sidebar con datos financieros
+            updateSidebarFinancialInfo(stats);
+            
+            // Mostrar resumen financiero si está disponible
+            if (stats.perdidas_acumuladas !== undefined) {
+                mostrarResumenFinanciero(stats);
+            }
+        }
+        
+        // Función para mostrar resumen financiero en la interfaz
+        function mostrarResumenFinanciero(stats) {
+            // Buscar o crear contenedor de resumen financiero
+            let resumenContainer = document.querySelector('#resumenFinanciero');
+            if (!resumenContainer) {
+                resumenContainer = document.createElement('div');
+                resumenContainer.id = 'resumenFinanciero';
+                resumenContainer.className = 'mb-4';
+                
+                // Insertar después de las métricas principales
+                const metricsContainer = document.querySelector('.grid.grid-cols-2.lg\\:grid-cols-4');
+                if (metricsContainer) {
+                    metricsContainer.parentNode.insertBefore(resumenContainer, metricsContainer.nextSibling);
+                }
+            }
+            
+            const perdidasAcumuladas = stats.perdidas_acumuladas || 0;
+            const gananciaEsperada = stats.ganancia_esperada || 0;
+            
+            resumenContainer.innerHTML = `
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="text-center p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center justify-center mb-2">
+                            ${getFinancialIconSVG('capital')}
+                        </div>
+                        <p class="text-xs text-white/40 mb-1">Capital Actual</p>
+                        <p class="text-lg font-semibold text-white/90">$${stats.capital_actual?.toFixed(2) || '0.00'}</p>
+                    </div>
+                    <div class="text-center p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center justify-center mb-2">
+                            ${getFinancialIconSVG('balance')}
+                        </div>
+                        <p class="text-xs text-white/40 mb-1">Balance Neto</p>
+                        <p class="text-lg font-semibold ${stats.balance_neto >= 0 ? 'text-green-400' : 'text-red-400'}">${stats.balance_neto >= 0 ? '+' : ''}€${stats.balance_neto?.toFixed(2) || '0.00'}</p>
+                    </div>
+                    <div class="text-center p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center justify-center mb-2">
+                            ${getFinancialIconSVG('losses')}
+                        </div>
+                        <p class="text-xs text-white/40 mb-1">Pérdidas Acumuladas</p>
+                        <p class="text-lg font-semibold text-red-400">€${perdidasAcumuladas.toFixed(2)}</p>
+                    </div>
+                    <div class="text-center p-3 bg-white/5 rounded-lg border border-white/10">
+                        <div class="flex items-center justify-center mb-2">
+                            ${getFinancialIconSVG('expected')}
+                        </div>
+                        <p class="text-xs text-white/40 mb-1">Ganancia Esperada</p>
+                        <p class="text-lg font-semibold text-blue-400">€${gananciaEsperada.toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Función para actualizar información financiera en el sidebar
+        function updateSidebarFinancialInfo(stats) {
+            // Buscar específicamente el contenedor de estadísticas del sidebar
+            const sidebarStats = document.querySelector('#sidebar .bg-gradient-to-br.from-white\\/5.to-white\\/\\[0\\.02\\]');
+            if (sidebarStats) {
+                const signalsElement = sidebarStats.querySelector('.text-blue-400');
+                const precisionElement = sidebarStats.querySelector('.text-green-400');
+                const gananciaElement = sidebarStats.querySelector('.text-yellow-400');
+                
+                if (signalsElement) signalsElement.textContent = stats.total_apuestas || '0';
+                if (precisionElement) precisionElement.textContent = `${stats.porcentaje_exito?.toFixed(1) || '0'}%`;
+                if (gananciaElement) gananciaElement.textContent = `€${stats.balance_neto?.toFixed(0) || '0'}`;
+                
+                console.log('✅ Estadísticas del sidebar actualizadas');
+            } else {
+                console.log('⚠️ Contenedor de estadísticas del sidebar no encontrado');
+            }
+        }
+        
+        // Función para actualizar historial profesional
+        function updateProfessionalHistory(historial, estadisticas) {
+            // Actualizar tabla de señales
+            updateSignalsTable(historial);
+            
+            // Actualizar señales recientes en el contenido principal
+            updateRecentSignals(historial.slice(0, 3));
+            
+
+            
+            // Actualizar estadísticas del historial
+            updateHistoryStats(estadisticas);
+        }
+        
+        // Función para actualizar tabla de señales
+        function updateSignalsTable(historial) {
+            const tbody = document.getElementById('signalsTableBody');
+            if (!tbody) {
+                console.log('⚠️ Tbody de la tabla no encontrado');
+                return;
+            }
+            
+            console.log('🔍 Datos del historial recibidos:', historial);
+            console.log('🔍 Total de señales a mostrar:', historial.length);
+            
+            // Limpiar tabla existente
+            tbody.innerHTML = '';
+            
+            // Mostrar solo las primeras 50 señales para mantener performance
+            const señalesAMostrar = historial.slice(0, 50);
+            console.log('🔍 Señales a mostrar (limitado a 50):', señalesAMostrar.length);
+            
+            señalesAMostrar.forEach((entrada, index) => {
+                console.log(`🔍 Entrada ${index}:`, entrada);
+                console.log(`🔍 Tipo: ${entrada.tipo}`);
+                console.log(`🔍 Datos:`, entrada.datos);
+                console.log(`🔍 Dat:`, entrada.dat);
+                console.log(`🔍 Apuesta monto:`, entrada.apuesta_monto);
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-white/5 transition-colors duration-300';
+                
+                const tipoIcon = getSignalIconSVG(entrada.tipo);
+                const resultado = getResultText(entrada.tipo);
+                const apuesta = entrada.apuesta_monto ? `$${entrada.apuesta_monto.toFixed(2)}` : '-';
+                const ganancia = getGananciaText(entrada);
+                const gananciaDetallada = getGananciaDetallada(entrada);
+                const fecha = `
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-white/80">${entrada.hora}</span>
+                        <span class="text-xs text-white/40">${entrada.fecha}</span>
+                    </div>
+                `;
+                const estado = entrada.estado;
+                
+                // console.log(`🔍 Ganancia calculada: ${ganancia}`);
+                // console.log(`🔍 Ganancia detallada: ${gananciaDetallada}`);
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${getSignalTypeClass(entrada.tipo)}">
+                            <span class="mr-1.5">${tipoIcon}</span>
+                            ${entrada.tipo}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${resultado}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-white/90">${apuesta}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="space-y-2">
+                            <div class="text-sm ${getGananciaClass(entrada)} font-medium">${ganancia}</div>
+                            ${gananciaDetallada}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">${fecha}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEstadoClass(estado)}">
+                            ${estado}
+                        </span>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Mostrar indicador si hay más señales
+            if (historial.length > 50) {
+                const infoRow = document.createElement('tr');
+                infoRow.className = 'bg-white/5';
+                infoRow.innerHTML = `
+                    <td colspan="6" class="px-4 py-3 text-center text-sm text-white/60">
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="w-2 h-2 bg-blue-400/60 rounded-full animate-pulse"></div>
+                            <span>Mostrando 50 de ${historial.length} señales. Usa el scroll para ver más.</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(infoRow);
+            }
+            
+            console.log('✅ Tabla de señales actualizada exitosamente');
+        }
+        
+        // Función para actualizar señales recientes en el contenido principal
+        function updateRecentSignals(señales) {
+            // Buscar específicamente el contenedor de señales recientes en el contenido principal
+            const container = document.querySelector('main .space-y-2');
+            if (!container) {
+                console.log('⚠️ Contenedor de señales recientes no encontrado en el contenido principal');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            señales.forEach(señal => {
+                const div = document.createElement('div');
+                div.className = 'group p-3 bg-white/5 rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300';
+                
+                const color = getSignalColor(señal.tipo);
+                const icon = getSignalIconSVG(señal.tipo);
+                const resultado = getResultText(señal.tipo);
+                const ganancia = getGananciaText(señal);
+                const gananciaDetallada = getGananciaDetallada(señal);
+                
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 ${color} rounded-full"></div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-white/60">${icon}</span>
+                                    <p class="text-sm font-medium text-white/90">${señal.tipo}</p>
+                                </div>
+                                <p class="text-xs text-white/40">${señal.hora}</p>
+                                <p class="text-xs text-white/50">${resultado}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-medium ${getGananciaClass(señal)}">${ganancia}</span>
+                            <div class="mt-1">${gananciaDetallada}</div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
+            
+            console.log('✅ Señales recientes actualizadas en el contenido principal');
+        }
+        
+
+        
+        // Funciones auxiliares para obtener estilos y textos
+        function getSignalTypeIcon(tipo) {
+            const icons = {
+                'BET': '🎯',
+                'GALE': '🔄',
+                'WIN': '✅',
+                'LOSS': '❌',
+                'TIE': '🟢'
+            };
+            return icons[tipo] || '📊';
+        }
+        
+        function getSignalTypeClass(tipo) {
+            const classes = {
+                'BET': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+                'GALE': 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+                'WIN': 'bg-green-500/20 text-green-400 border border-green-500/30',
+                'LOSS': 'bg-red-500/20 text-red-400 border border-red-500/30',
+                'TIE': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+            };
+            return classes[tipo] || 'bg-white/20 text-white/90 border border-white/20';
+        }
+        
+        function getResultText(tipo) {
+            const results = {
+                'BET': 'Apuesta Inicial',
+                'GALE': `Gale ${tipo === 'GALE' ? 'Activo' : ''}`,
+                'WIN': 'Ganada',
+                'LOSS': 'Perdida',
+                'TIE': 'Empate'
+            };
+            return results[tipo] || 'Desconocido';
+        }
+        
+        function getGananciaText(entrada) {
+            if (entrada.tipo === 'WIN') {
+                // Para señales ganadas, mostrar la ganancia real
+                const ganancia = entrada.datos?.ganancia || entrada.dat?.ganancia || 0;
+                return `+$${ganancia.toFixed(2)}`;
+            } else if (entrada.tipo === 'LOSS') {
+                // Para señales perdidas, mostrar la pérdida real
+                const perdida = entrada.datos?.perdida || entrada.dat?.perdida || entrada.apuesta_monto || 0;
+                return `-$${perdida.toFixed(2)}`;
+            } else if (entrada.tipo === 'BET') {
+                // Para apuestas, mostrar la ganancia esperada
+                const gananciaEsperada = entrada.datos?.ganancia_esperada || entrada.dat?.ganancia_esperada || 0;
+                return gananciaEsperada > 0 ? `+$${gananciaEsperada.toFixed(2)}` : '$0.00';
+            } else if (entrada.tipo === 'GALE') {
+                // Para gales, mostrar la ganancia esperada
+                const gananciaEsperada = entrada.datos?.ganancia_esperada || entrada.dat?.ganancia_esperada || 0;
+                return gananciaEsperada > 0 ? `+$${gananciaEsperada.toFixed(2)}` : '$0.00';
+            } else if (entrada.tipo === 'TIE') {
+                // Para empates, no hay ganancia ni pérdida
+                return '$0.00';
+            }
+            return '$0.00';
+        }
+        
+        function getGananciaClass(entrada) {
+            if (entrada.tipo === 'WIN') {
+                return 'text-green-400';
+            } else if (entrada.tipo === 'LOSS') {
+                return 'text-red-400';
+            } else if (entrada.tipo === 'BET' || entrada.tipo === 'GALE') {
+                // Para apuestas y gales, mostrar en azul si hay ganancia esperada
+                const gananciaEsperada = entrada.datos?.ganancia_esperada || entrada.dat?.ganancia_esperada || 0;
+                return gananciaEsperada > 0 ? 'text-blue-400' : 'text-white/60';
+            } else if (entrada.tipo === 'TIE') {
+                return 'text-yellow-400';
+            }
+            return 'text-white/60';
+        }
+        
+        function getEstadoClass(estado) {
+            return estado === 'COMPLETADA' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+        }
+        
+        function getSignalColor(tipo) {
+            const colors = {
+                'BET': 'bg-blue-400',
+                'GALE': 'bg-purple-400',
+                'WIN': 'bg-green-400',
+                'LOSS': 'bg-red-400',
+                'TIE': 'bg-yellow-400'
+            };
+            return colors[tipo] || 'bg-white/40';
+        }
+        
+        function getSignalIcon(tipo) {
+            const icons = {
+                'BET': '🎯',
+                'GALE': '🔄',
+                'WIN': '✅',
+                'LOSS': '❌',
+                'TIE': '🟢'
+            };
+            return icons[tipo] || '📊';
+        }
+        
+        function getGananciaDetallada(entrada) {
+            if (entrada.tipo === 'WIN') {
+                const ganancia = entrada.datos?.ganancia || entrada.dat?.ganancia || 0;
+                const apuesta = entrada.apuesta_monto || entrada.datos?.apuesta_monto || 0;
+                return `<div class="space-y-1">
+                    <div class="text-xs text-green-400 font-medium">+$${ganancia.toFixed(2)} ganancia</div>
+                    <div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                </div>`;
+            } else if (entrada.tipo === 'LOSS') {
+                const perdida = entrada.datos?.perdida || entrada.dat?.perdida || entrada.apuesta_monto || 0;
+                const apuesta = entrada.apuesta_monto || entrada.datos?.apuesta_monto || 0;
+                return `<div class="space-y-1">
+                    <div class="text-xs text-red-400 font-medium">-$${perdida.toFixed(2)} pérdida</div>
+                    <div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                </div>`;
+            } else if (entrada.tipo === 'BET') {
+                const gananciaEsperada = entrada.datos?.ganancia_esperada || entrada.dat?.ganancia_esperada || 0;
+                const apuesta = entrada.apuesta_monto || entrada.datos?.apuesta_monto || 0;
+                if (gananciaEsperada > 0) {
+                    return `<div class="space-y-1">
+                        <div class="text-xs text-blue-400 font-medium">+$${gananciaEsperada.toFixed(2)} esperado</div>
+                        <div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                    </div>`;
+                } else {
+                    return `<div class="space-y-1">
+                        <div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                        <div class="text-xs text-white/30">Sin ganancia esperada</div>
+                    </div>`;
+                }
+            } else if (entrada.tipo === 'GALE') {
+                const gananciaEsperada = entrada.datos?.ganancia_esperada || entrada.dat?.ganancia_esperada || 0;
+                const apuesta = entrada.apuesta_monto || entrada.datos?.apuesta_monto || 0;
+                if (gananciaEsperada > 0) {
+                    return `<div class="space-y-1">
+                        <div class="text-xs text-purple-400 font-medium">+$${gananciaEsperada.toFixed(2)} esperado</div>
+                        <div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                    </div>`;
+                } else {
+                    return `<div class="text-xs text-white/40">$${apuesta.toFixed(2)} apostado</div>
+                        <div class="text-xs text-white/30">Sin ganancia esperada</div>
+                    </div>`;
+                }
+            } else if (entrada.tipo === 'TIE') {
+                return `<div class="text-xs text-yellow-400 font-medium">Sin ganancia ni pérdida</div>
+                    <div class="text-xs text-white/30">Apuesta devuelta</div>
+                </div>`;
+            }
+            return `<div class="space-y-1">
+                <div class="text-xs text-white/30">Sin información disponible</div>
+            </div>`;
+        }
+        
+        // Función para actualizar estado de conexión
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.querySelector('.w-1\\.5.h-1\\.5.bg-green-400');
+            if (statusIndicator) {
+                statusIndicator.className = connected ? 'w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse' : 'w-1.5 h-1.5 bg-red-400 rounded-full';
+            }
+        }
+        
+        // Función para agregar señal al historial
+        function addSignalToHistory(message) {
+            // Aquí puedes implementar la lógica para agregar señales al historial
+            console.log('📝 Nueva señal agregada:', message);
+        }
+        
+        // Función para actualizar últimos resultados
+        function updateLastResults(resultados) {
+            console.log('🎲 Últimos 100 resultados:', resultados);
+            // Aquí puedes implementar la visualización de los últimos resultados
+        }
+        
+        function updateLast5Results(resultados) {
+            console.log('🎲 Últimos 5 resultados:', resultados);
+            // Aquí puedes implementar la visualización de los últimos 5 resultados
+        }
+        
+        function updateFinancialSummary(stats) {
+            console.log('💰 Resumen financiero:', stats);
+            // Aquí puedes implementar actualizaciones adicionales del resumen financiero
+        }
+        
+        function updateHistorySummary(stats) {
+            console.log('📊 Resumen del historial:', stats);
+            // Aquí puedes implementar actualizaciones adicionales del resumen del historial
+        }
+        
+        // Función para actualizar estadísticas del historial
+        function updateHistoryStats(stats) {
+            console.log('📈 Estadísticas del historial:', stats);
+            // Aquí puedes implementar la visualización de estadísticas del historial
+        }
+        
+        // Conectar al WebSocket cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando conexión WebSocket...');
+            connectWebSocket();
+        });
+        
+        // Reconectar si se pierde la conexión
+        window.addEventListener('focus', function() {
+            if (!isConnected && reconnectAttempts < maxReconnectAttempts) {
+                console.log('🔄 Intentando reconectar al enfocar la ventana...');
+                connectWebSocket();
+            }
+        });
+        
+        // Función de prueba para verificar que las funciones funcionen correctamente
+        function testFunctions() {
+            console.log('🧪 Iniciando prueba de funciones...');
+            
+            // Datos de prueba simulando lo que llega del WebSocket
+            const datosPrueba = [
+                {
+                    id: 'TEST001',
+                    tipo: 'WIN',
+                    numero: 26,
+                    hora: '17:01:42',
+                    fecha: '20/08/2025',
+                    estado: 'COMPLETADA',
+                    apuesta_monto: 10.00,
+                    datos: {
+                        ganancia: 5.00,
+                        apuesta_monto: 10.00,
+                        docena_acertada: 1,
+                        gale_numero: 0,
+                        perdidas_recuperadas: 0
+                    }
+                },
+                {
+                    id: 'TEST002',
+                    tipo: 'LOSS',
+                    numero: 27,
+                    hora: '17:01:45',
+                    fecha: '20/08/2025',
+                    estado: 'COMPLETADA',
+                    apuesta_monto: 90.00,
+                    datos: {
+                        perdida: 90.00,
+                        apuesta_monto: 90.00,
+                        docena_fallida: 2,
+                        gale_numero: 2,
+                        perdidas_acumuladas: 130.00
+                    }
+                },
+                {
+                    id: 'TEST003',
+                    tipo: 'BET',
+                    numero: 28,
+                    hora: '17:01:50',
+                    fecha: '20/08/2025',
+                    estado: 'ACTIVA',
+                    apuesta_monto: 10.00,
+                    datos: {
+                        docenas_apostadas: 'Docenas 1 y 3',
+                        monto_total: 10.00,
+                        monto_por_docena: 5.00,
+                        max_gales: 3,
+                        ganancia_esperada: 5.00,
+                        apuesta_monto: 10.00,
+                        ganancia: 0,
+                        perdida: 0
+                    }
+                }
+            ];
+            
+            console.log('🧪 Datos de prueba:', datosPrueba);
+            
+            // Probar función getGananciaText
+            datosPrueba.forEach((entrada, index) => {
+                console.log(`🧪 Prueba ${index + 1} - Tipo: ${entrada.tipo}`);
+                console.log(`🧪 Ganancia calculada:`, getGananciaText(entrada));
+                console.log(`�� Ganancia detallada (HTML):`, getGananciaDetallada(entrada));
+                console.log(`🧪 Clase de ganancia:`, getGananciaClass(entrada));
+                console.log('---');
+            });
+            
+            // Probar actualización de tabla
+            console.log('🧪 Probando actualización de tabla...');
+            updateSignalsTable(datosPrueba);
+            
+            // Mostrar ejemplo de cómo se verá en la interfaz
+            console.log('🧪 Ejemplo de visualización:');
+            console.log('✅ WIN: +$5.00 (ganancia) y $10.00 (apostado)');
+            console.log('❌ LOSS: -$90.00 (pérdida) y $90.00 (apostado)');
+            console.log('🎯 BET: +$5.00 (esperado) y $10.00 (apostado)');
+        }
+
+        // Función para obtener iconos SVG profesionales en lugar de emojis
+        function getSignalIconSVG(tipo) {
+            const icons = {
+                'BET': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`,
+                'GALE': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z"/>
+                </svg>`,
+                'WIN': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>`,
+                'LOSS': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>`,
+                'TIE': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                </svg>`
+            };
+            return icons[tipo] || `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>`;
+        }
+        
+        // Función para obtener iconos SVG para métricas
+        function getMetricIconSVG(metric) {
+            const icons = {
+                'signals': `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                </svg>`,
+                'precision': `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>`,
+                'balance': `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                </svg>`,
+                'active': `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                </svg>`
+            };
+            return icons[metric] || icons['signals'];
+        }
+        
+        // Función para obtener iconos SVG para el resumen financiero
+        function getFinancialIconSVG(type) {
+            const icons = {
+                'capital': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                </svg>`,
+                'balance': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>`,
+                'losses': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>`,
+                'expected': `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`
+            };
+            return icons[type] || icons['capital'];
+        }
+        
+        // Funcionalidad del dropdown del usuario
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        // Función para mostrar/ocultar dropdown
+        function toggleUserDropdown() {
+            if (userDropdown) {
+                const isVisible = userDropdown.classList.contains('opacity-100');
+                
+                if (isVisible) {
+                    // Ocultar dropdown
+                    userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                    userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                } else {
+                    // Mostrar dropdown
+                    userDropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                    userDropdown.classList.add('opacity-100', 'visible', 'scale-100');
+                }
+            }
+        }
+        
+        // Event listener para el botón del usuario
+        if (userMenuBtn) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleUserDropdown();
+            });
+        }
+        
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (userDropdown && !userDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            }
+        });
+        
+        // Cerrar dropdown con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && userDropdown) {
+                userDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            }
+        });
+        
+        // Función para logout
+        function logout() {
+            // Aquí puedes agregar la lógica de logout
+            console.log('🚪 Cerrando sesión...');
+            // Ejemplo: redirigir a página de login
+            // window.location.href = '/login';
+            // O mostrar confirmación
+            if (confirm('¿Estás seguro de que quieres salir?')) {
+                alert('Sesión cerrada exitosamente');
+                // Aquí iría la lógica real de logout
+            }
+        }
+
+    </script>
+</body>
+</html>

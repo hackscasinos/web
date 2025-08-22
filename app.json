@@ -1,0 +1,56 @@
+{
+  "name": "DESA BOTS - Casino Signals",
+  "description": "Sistema completo de señales de casino con WebSocket seguro",
+  "repository": "https://github.com/hackscasinos/web",
+  "logo": "https://raw.githubusercontent.com/hackscasinos/web/main/static/img/logo.png",
+  "keywords": [
+    "python",
+    "flask",
+    "casino",
+    "signals",
+    "websocket",
+    "roulette",
+    "aviator"
+  ],
+  "env": {
+    "SECRET_KEY": {
+      "description": "Clave secreta para Flask",
+      "generator": "secret"
+    },
+    "JWT_SECRET": {
+      "description": "Clave secreta para JWT",
+      "generator": "secret"
+    },
+    "DATABASE_URL": {
+      "description": "URL de la base de datos PostgreSQL",
+      "value": "postgresql://localhost/desa_bots"
+    },
+    "ALLOWED_ORIGINS": {
+      "description": "Dominios permitidos para WebSocket",
+      "value": "https://hacks.casino,http://localhost:5000"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    },
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "websocket": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}

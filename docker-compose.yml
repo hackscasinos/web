@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15
+    container_name: desa_bots_db
+    environment:
+      POSTGRES_DB: desa_bots
+      POSTGRES_USER: desa_user
+      POSTGRES_PASSWORD: desa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - desa_network
+
+  # Aplicación principal Flask
+  web:
+    build: .
+    container_name: desa_bots_web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - DATABASE_URL=postgresql://desa_user:desa_password@db:5432/desa_bots
+      - SECRET_KEY=dev_secret_key_change_in_production
+      - JWT_SECRET=dev_jwt_secret_change_in_production
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    networks:
+      - desa_network
+    command: python app.py
+
+  # Servidor WebSocket
+  websocket:
+    build: .
+    container_name: desa_bots_websocket
+    ports:
+      - "8865:8865"
+    environment:
+      - DATABASE_URL=postgresql://desa_user:desa_password@db:5432/desa_bots
+      - JWT_SECRET=dev_jwt_secret_change_in_production
+      - ALLOWED_ORIGINS=http://localhost:5000,https://hacks.casino
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    networks:
+      - desa_network
+    command: python ruleta.py
+
+  # Redis para cache y sesiones (opcional)
+  redis:
+    image: redis:7-alpine
+    container_name: desa_bots_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - desa_network
+
+volumes:
+  postgres_data:
+
+networks:
+  desa_network:
+    driver: bridge
